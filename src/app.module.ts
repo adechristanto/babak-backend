@@ -13,6 +13,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { MessagingModule } from './modules/messaging/messaging.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
@@ -69,6 +70,7 @@ import { validate } from './config/env.validation';
     MessagingModule,
     FavoritesModule,
     NotificationsModule,
+    EmailModule,
     HealthModule,
   ],
   controllers: [AppController],

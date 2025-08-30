@@ -7,12 +7,15 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  Get,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -88,5 +91,25 @@ export class AuthController {
     // In a real application, you might want to blacklist the token
     // For now, we'll just return a success message
     return { message: 'Logged out successfully' };
+  }
+
+  @Get('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify email address' })
+  @ApiQuery({ name: 'token', description: 'Email verification token' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async verifyEmail(@Query('token') token: string): Promise<{ success: boolean; message: string }> {
+    return this.authService.verifyEmail(token);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend email verification' })
+  @ApiResponse({ status: 200, description: 'Verification email sent successfully' })
+  @ApiResponse({ status: 400, description: 'Email already verified or user not found' })
+  async resendVerification(@Body('email') email: string): Promise<{ success: boolean; message: string }> {
+    return this.authService.resendVerificationEmail(email);
   }
 }

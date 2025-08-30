@@ -11,7 +11,7 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const { email, password, ...userData } = createUserDto;
+    const { email, password, emailVerificationToken, emailVerificationExpires, ...userData } = createUserDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -30,6 +30,8 @@ export class UsersService {
       data: {
         email,
         passwordHash,
+        emailVerificationToken,
+        emailVerificationExpires,
         ...userData,
       },
     });
@@ -112,5 +114,36 @@ export class UsersService {
     } catch (error) {
       return false;
     }
+  }
+
+  async findByEmailVerificationToken(token: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { emailVerificationToken: token },
+    });
+  }
+
+  async markEmailAsVerified(userId: number): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+  }
+
+  async updateEmailVerificationToken(
+    userId: number,
+    token: string,
+    expires: Date
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerificationToken: token,
+        emailVerificationExpires: expires,
+      },
+    });
   }
 }
