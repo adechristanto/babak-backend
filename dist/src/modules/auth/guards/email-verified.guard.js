@@ -21,21 +21,24 @@ let EmailVerifiedGuard = class EmailVerifiedGuard {
         this.usersService = usersService;
     }
     async canActivate(context) {
-        const allowUnverified = this.reflector.get('allowUnverified', context.getHandler());
+        const allowUnverified = this.reflector.getAllAndOverride('allowUnverified', [
+            context.getHandler(),
+            context.getClass(),
+        ]);
         if (allowUnverified) {
             return true;
         }
         const request = context.switchToHttp().getRequest();
         const user = request.user;
         if (!user) {
-            throw new common_1.ForbiddenException('User not authenticated');
+            throw new common_1.UnauthorizedException('User not authenticated');
         }
         const fullUser = await this.usersService.findByEmail(user.email);
         if (!fullUser) {
-            throw new common_1.ForbiddenException('User not found');
+            throw new common_1.UnauthorizedException('User not found');
         }
         if (!fullUser.emailVerified) {
-            throw new common_1.ForbiddenException('Email verification required. Please verify your email address to access this feature.');
+            throw new common_1.UnauthorizedException('Email verification required');
         }
         return true;
     }
