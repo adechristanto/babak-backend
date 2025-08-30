@@ -43,8 +43,10 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    // Generate email verification token
-    const emailVerificationToken = randomBytes(32).toString('hex');
+    // Generate email verification token with email embedded
+    const randomPart = randomBytes(32).toString('hex');
+    const emailPart = Buffer.from(registerDto.email).toString('base64');
+    const emailVerificationToken = `${emailPart}.${randomPart}`;
     const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Create user with email verification fields
@@ -108,11 +110,28 @@ export class AuthService {
     const user = await this.usersService.findByEmailVerificationToken(token);
 
     if (!user) {
-      // Token not found - check if this might be a case where the user is already verified
-      // We need to check if there's a user with this email that's already verified
-      // Since we can't extract email from the token, we'll need a different approach
+      // Token not found - this could mean:
+      // 1. Token is invalid/expired
+      // 2. User has already verified their email (token was cleared)
 
-      // For now, we'll return a more specific error message
+      // Try to extract email from the token to check if user is already verified
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 2) {
+          const emailPart = tokenParts[0];
+          const email = Buffer.from(emailPart, 'base64').toString();
+
+          // Check if there's a user with this email that's already verified
+          const existingUser = await this.usersService.findByEmail(email);
+          if (existingUser && existingUser.emailVerified) {
+            return { success: false, message: 'Email is already verified' };
+          }
+        }
+      } catch {
+        // If we can't decode the token, continue with the default error message
+      }
+
+      // Return a more specific error message that the frontend can handle
       return {
         success: false,
         message:
@@ -158,8 +177,10 @@ export class AuthService {
       return { success: false, message: 'Email is already verified' };
     }
 
-    // Generate new verification token
-    const emailVerificationToken = randomBytes(32).toString('hex');
+    // Generate new verification token with email embedded
+    const randomPart = randomBytes(32).toString('hex');
+    const emailPart = Buffer.from(email).toString('base64');
+    const emailVerificationToken = `${emailPart}.${randomPart}`;
     const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Update user with new token
