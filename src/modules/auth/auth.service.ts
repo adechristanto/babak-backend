@@ -21,15 +21,15 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findByEmail(email);
-    
-    if (user && await this.usersService.validatePassword(user, password)) {
+
+    if (user && (await this.usersService.validatePassword(user, password))) {
       return user;
     }
-    
+
     return null;
   }
 
-  async login(user: User): Promise<AuthResponseDto> {
+  login(user: User): Promise<AuthResponseDto> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -66,7 +66,7 @@ export class AuthService {
       await this.emailService.sendEmailVerification(
         user.email,
         user.name || 'User',
-        emailVerificationToken
+        emailVerificationToken,
       );
     } catch (error) {
       console.error('Failed to send verification email:', error);
@@ -85,7 +85,7 @@ export class AuthService {
     return new AuthResponseDto(accessToken, userResponse);
   }
 
-  async refreshToken(user: User): Promise<AuthResponseDto> {
+  refreshToken(user: User): Promise<AuthResponseDto> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -102,14 +102,28 @@ export class AuthService {
     return this.usersService.findByEmail(email);
   }
 
-  async verifyEmail(token: string): Promise<{ success: boolean; message: string }> {
+  async verifyEmail(
+    token: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.usersService.findByEmailVerificationToken(token);
 
     if (!user) {
-      return { success: false, message: 'Invalid verification token' };
+      // Token not found - check if this might be a case where the user is already verified
+      // We need to check if there's a user with this email that's already verified
+      // Since we can't extract email from the token, we'll need a different approach
+
+      // For now, we'll return a more specific error message
+      return {
+        success: false,
+        message:
+          'Invalid or expired verification token. If you have already verified your email, you can proceed to use the application.',
+      };
     }
 
-    if (user.emailVerificationExpires && user.emailVerificationExpires < new Date()) {
+    if (
+      user.emailVerificationExpires &&
+      user.emailVerificationExpires < new Date()
+    ) {
       return { success: false, message: 'Verification token has expired' };
     }
 
@@ -131,7 +145,9 @@ export class AuthService {
     return { success: true, message: 'Email verified successfully' };
   }
 
-  async resendVerificationEmail(email: string): Promise<{ success: boolean; message: string }> {
+  async resendVerificationEmail(
+    email: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -147,14 +163,18 @@ export class AuthService {
     const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Update user with new token
-    await this.usersService.updateEmailVerificationToken(user.id, emailVerificationToken, emailVerificationExpires);
+    await this.usersService.updateEmailVerificationToken(
+      user.id,
+      emailVerificationToken,
+      emailVerificationExpires,
+    );
 
     // Send verification email
     try {
       await this.emailService.sendEmailVerification(
         user.email,
         user.name || 'User',
-        emailVerificationToken
+        emailVerificationToken,
       );
       return { success: true, message: 'Verification email sent successfully' };
     } catch (error) {
