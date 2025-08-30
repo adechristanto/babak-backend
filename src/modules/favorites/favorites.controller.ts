@@ -18,10 +18,11 @@ import {
 import { FavoritesService } from './favorites.service';
 import { FavoriteResponseDto } from './dto/favorite-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Favorites')
 @Controller('favorites')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 @ApiBearerAuth()
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}

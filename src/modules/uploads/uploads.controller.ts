@@ -18,10 +18,11 @@ import { UploadsService } from './uploads.service';
 import { UploadRequestDto } from './dto/upload-request.dto';
 import { UploadResponseDto } from './dto/upload-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Uploads')
 @Controller('uploads')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 @ApiBearerAuth()
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}

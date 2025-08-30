@@ -26,6 +26,7 @@ import { SearchListingsDto } from './dto/search-listings.dto';
 import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Listings')
 @Controller('listings')
@@ -33,7 +34,7 @@ export class ListingsController {
   constructor(private readonly listingsService: ListingsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Create a new listing' })
   @ApiResponse({ status: 201, description: 'Listing created successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Category not found' })
@@ -74,7 +75,7 @@ export class ListingsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Update listing by ID' })
   @ApiResponse({ status: 200, description: 'Listing updated successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Listing not found' })
@@ -90,7 +91,7 @@ export class ListingsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Delete listing by ID' })
   @ApiResponse({ status: 200, description: 'Listing deleted successfully' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
@@ -106,7 +107,7 @@ export class ListingsController {
   }
 
   @Post(':id/publish')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Publish a draft listing' })
   @ApiResponse({ status: 200, description: 'Listing published successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Listing not found' })
@@ -122,7 +123,7 @@ export class ListingsController {
   }
 
   @Post(':id/extend')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Extend listing expiration' })
   @ApiResponse({ status: 200, description: 'Listing expiration extended successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Listing not found' })

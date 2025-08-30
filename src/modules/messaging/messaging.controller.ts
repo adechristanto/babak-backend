@@ -22,10 +22,11 @@ import { CreateThreadDto } from './dto/create-thread.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ThreadResponseDto, MessageResponseDto } from './dto/thread-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Messaging')
 @Controller('messaging')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
 @ApiBearerAuth()
 export class MessagingController {
   constructor(private readonly messagingService: MessagingService) {}

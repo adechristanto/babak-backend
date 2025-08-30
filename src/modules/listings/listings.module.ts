@@ -6,9 +6,11 @@ import { ListingImagesController } from './images/listing-images.controller';
 import { ListingUpgradesService } from './listing-upgrades.service';
 import { ListingUpgradesController } from './listing-upgrades.controller';
 import { UploadsModule } from '../uploads/uploads.module';
+import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [UploadsModule],
+  imports: [UploadsModule, AuthModule, UsersModule],
   controllers: [ListingsController, ListingImagesController, ListingUpgradesController],
   providers: [ListingsService, ListingImagesService, ListingUpgradesService],
   exports: [ListingsService, ListingImagesService, ListingUpgradesService],

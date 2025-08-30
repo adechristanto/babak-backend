@@ -23,6 +23,10 @@ export class UserResponseDto {
   @Expose()
   role: UserRole;
 
+  @ApiProperty({ example: true })
+  @Expose()
+  emailVerified: boolean;
+
   @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
   @Expose()
   createdAt: Date;
@@ -33,6 +37,12 @@ export class UserResponseDto {
 
   @Exclude()
   passwordHash: string;
+
+  @Exclude()
+  emailVerificationToken: string | null;
+
+  @Exclude()
+  emailVerificationExpires: Date | null;
 
   constructor(partial: Partial<UserResponseDto>) {
     Object.assign(this, partial);

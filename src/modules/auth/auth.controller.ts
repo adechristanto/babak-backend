@@ -24,6 +24,8 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { EmailVerifiedGuard } from './guards/email-verified.guard';
+import { AllowUnverified } from './decorators/allow-unverified.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -64,6 +66,7 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({
@@ -83,6 +86,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200, description: 'User logged out successfully' })
@@ -105,11 +109,27 @@ export class AuthController {
 
   @Post('resend-verification')
   @UseGuards(ThrottlerGuard)
+  @AllowUnverified()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend email verification' })
   @ApiResponse({ status: 200, description: 'Verification email sent successfully' })
   @ApiResponse({ status: 400, description: 'Email already verified or user not found' })
   async resendVerification(@Body('email') email: string): Promise<{ success: boolean; message: string }> {
     return this.authService.resendVerificationEmail(email);
+  }
+
+  @Get('verification-status')
+  @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current user email verification status' })
+  @ApiResponse({ status: 200, description: 'Verification status retrieved successfully' })
+  @ApiBearerAuth()
+  async getVerificationStatus(@Request() req: any): Promise<{ emailVerified: boolean; email: string }> {
+    const user = await this.authService.findUserByEmail(req.user.email);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return { emailVerified: user.emailVerified, email: user.email };
   }
 }
