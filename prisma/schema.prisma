@@ -1,0 +1,232 @@
+// Babak Marketplace Backend - Prisma Schema
+// This schema defines the complete database structure for the marketplace platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  PENDING
+  REJECTED
+  ARCHIVED
+}
+
+// Users and Authentication
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  passwordHash String  @map("password_hash")
+  name        String?
+  avatarUrl   String?  @map("avatar_url")
+  role        UserRole @default(USER)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sessions      UserSession[]
+  listings      Listing[]
+  sentMessages  Message[]
+  threadParticipants ThreadParticipant[]
+  favorites     Favorite[]
+  reviews       Review[]
+  notifications Notification[]
+  reports       Report[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  refreshTokenHash String   @map("refresh_token_hash")
+  userAgent        String?  @map("user_agent")
+  ipAddress        String?  @map("ip_address")
+  createdAt        DateTime @default(now()) @map("created_at")
+  expiresAt        DateTime @map("expires_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+// Categories
+model Category {
+  id       Int     @id @default(autoincrement())
+  name     String
+  slug     String  @unique
+  parentId Int?    @map("parent_id")
+  depth    Int     @default(0)
+  path     String? // Materialized path for efficient queries
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  listings Listing[]
+
+  @@map("categories")
+}
+
+// Listings
+model Listing {
+  id          Int           @id @default(autoincrement())
+  sellerId    Int           @map("seller_id")
+  title       String
+  description String?
+  price       Decimal       @db.Decimal(12, 2)
+  currency    String        @default("USD")
+  categoryId  Int?          @map("category_id")
+  city        String?
+  latitude    Decimal?      @db.Decimal(10, 8)
+  longitude   Decimal?      @db.Decimal(11, 8)
+  status      ListingStatus @default(DRAFT)
+  isVip       Boolean       @default(false) @map("is_vip")
+  isFeatured  Boolean       @default(false) @map("is_featured")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  expiresAt   DateTime?     @map("expires_at")
+
+  // Relations
+  seller    User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category  Category?       @relation(fields: [categoryId], references: [id])
+  images    ListingImage[]
+  threads   Thread[]
+  favorites Favorite[]
+  reviews   Review[]
+  reports   Report[]
+
+  @@map("listings")
+}
+
+model ListingImage {
+  id        Int      @id @default(autoincrement())
+  listingId Int      @map("listing_id")
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@map("listing_images")
+}
+
+// Messaging System
+model Thread {
+  id            Int      @id @default(autoincrement())
+  listingId     Int      @map("listing_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  lastMessageAt DateTime @default(now()) @map("last_message_at")
+
+  // Relations
+  listing      Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  participants ThreadParticipant[]
+  messages     Message[]
+
+  @@map("threads")
+}
+
+model ThreadParticipant {
+  id         Int      @id @default(autoincrement())
+  threadId   Int      @map("thread_id")
+  userId     Int      @map("user_id")
+  lastReadAt DateTime @default(now()) @map("last_read_at")
+
+  // Relations
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@map("thread_participants")
+}
+
+model Message {
+  id       Int      @id @default(autoincrement())
+  threadId Int      @map("thread_id")
+  senderId Int      @map("sender_id")
+  content  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// User Favorites
+model Favorite {
+  userId    Int      @map("user_id")
+  listingId Int      @map("listing_id")
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listingId])
+  @@map("favorites")
+}
+
+// Reviews and Ratings
+model Review {
+  id         Int      @id @default(autoincrement())
+  listingId  Int      @map("listing_id")
+  reviewerId Int      @map("reviewer_id")
+  rating     Int      @db.SmallInt
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reviewer User    @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+// User Notifications
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String
+  title     String
+  body      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Content Reports
+model Report {
+  id         Int      @id @default(autoincrement())
+  listingId  Int      @map("listing_id")
+  reporterId Int      @map("reporter_id")
+  category   String
+  reason     String
+  details    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reporter User    @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
