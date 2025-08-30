@@ -135,7 +135,7 @@ export class AuthService {
       return {
         success: false,
         message:
-          'Invalid or expired verification token. If you have already verified your email, you can proceed to use the application.',
+          'This verification link has already been used or has expired. If you have already verified your email, you can proceed to use the application. If you need to verify your email, please request a new verification link.',
       };
     }
 
