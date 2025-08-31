@@ -2,6 +2,7 @@ import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 export declare class UsersService {
     private readonly prisma;
@@ -16,4 +17,5 @@ export declare class UsersService {
     findByEmailVerificationToken(token: string): Promise<User | null>;
     markEmailAsVerified(userId: number): Promise<void>;
     updateEmailVerificationToken(userId: number, token: string, expires: Date): Promise<void>;
+    changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void>;
 }

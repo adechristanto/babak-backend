@@ -59,6 +59,22 @@ export class ListingResponseDto {
   @Expose()
   longitude: number | null;
 
+  @ApiProperty({ example: '123 Main St, New York, NY 10001, USA' })
+  @Expose()
+  locationAddress: string | null;
+
+  @ApiProperty({ example: 'New York' })
+  @Expose()
+  locationCity: string | null;
+
+  @ApiProperty({ example: 'United States' })
+  @Expose()
+  locationCountry: string | null;
+
+  @ApiProperty({ example: 'ChIJOwg_06VPwokRYv534QaPC8g' })
+  @Expose()
+  locationPlaceId: string | null;
+
   @ApiProperty({ enum: ListingStatus })
   @Expose()
   status: ListingStatus;
@@ -98,7 +114,26 @@ export class ListingResponseDto {
   @Type(() => ListingImageResponseDto)
   images: ListingImageResponseDto[];
 
-  constructor(partial: Partial<ListingResponseDto>) {
+  constructor(partial: any) {
     Object.assign(this, partial);
+
+    // Convert Decimal types to numbers for coordinates and price
+    if (partial.price !== null && partial.price !== undefined) {
+      this.price = typeof partial.price === 'object'
+        ? Number(partial.price.toString())
+        : partial.price;
+    }
+
+    if (partial.latitude !== null && partial.latitude !== undefined) {
+      this.latitude = typeof partial.latitude === 'object'
+        ? Number(partial.latitude.toString())
+        : partial.latitude;
+    }
+
+    if (partial.longitude !== null && partial.longitude !== undefined) {
+      this.longitude = typeof partial.longitude === 'object'
+        ? Number(partial.longitude.toString())
+        : partial.longitude;
+    }
   }
 }

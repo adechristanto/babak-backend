@@ -1,4 +1,4 @@
-import { ListingStatus } from '@prisma/client';
+import { ListingStatus, ListingCondition, NegotiableStatus } from '@prisma/client';
 export declare class UpdateListingDto {
     title?: string;
     description?: string;
@@ -8,5 +8,11 @@ export declare class UpdateListingDto {
     city?: string;
     latitude?: number;
     longitude?: number;
+    locationAddress?: string;
+    locationCity?: string;
+    locationCountry?: string;
+    locationPlaceId?: string;
     status?: ListingStatus;
+    condition?: ListingCondition;
+    negotiable?: NegotiableStatus;
 }

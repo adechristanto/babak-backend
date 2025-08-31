@@ -14,6 +14,7 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  SUPERUSER
 }
 
 enum ListingStatus {
@@ -24,6 +25,21 @@ enum ListingStatus {
   ARCHIVED
 }
 
+enum ListingCondition {
+  NEW
+  LIKE_NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
+enum NegotiableStatus {
+  FIXED_PRICE
+  NEGOTIABLE
+  MAKE_OFFER
+}
+
 // Users and Authentication
 model User {
   id          Int      @id @default(autoincrement())
@@ -31,6 +47,15 @@ model User {
   passwordHash String  @map("password_hash")
   name        String?
   avatarUrl   String?  @map("avatar_url")
+  phone       String?
+  location    String?
+  locationAddress String? @map("location_address") // Full formatted address
+  locationCity String? @map("location_city") // City name
+  locationCountry String? @map("location_country") // Country name
+  locationLatitude Decimal? @map("location_latitude") @db.Decimal(10, 8)
+  locationLongitude Decimal? @map("location_longitude") @db.Decimal(11, 8)
+  locationPlaceId String? @map("location_place_id") // Google Places ID
+  bio         String?
   role        UserRole @default(USER)
   emailVerified Boolean @default(false) @map("email_verified")
   emailVerificationToken String? @unique @map("email_verification_token")
@@ -47,6 +72,8 @@ model User {
   reviews       Review[]
   notifications Notification[]
   reports       Report[]
+  views         ListingView[] @relation("UserViews")
+  settings      UserSettings?
 
   @@map("users")
 }
@@ -64,6 +91,36 @@ model UserSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_sessions")
+}
+
+model UserSettings {
+  id     Int @id @default(autoincrement())
+  userId Int @unique @map("user_id")
+
+  // Notification Settings
+  emailNotifications Boolean @default(true) @map("email_notifications")
+  pushNotifications  Boolean @default(true) @map("push_notifications")
+  messageAlerts      Boolean @default(true) @map("message_alerts")
+  listingUpdates     Boolean @default(true) @map("listing_updates")
+  marketingEmails    Boolean @default(false) @map("marketing_emails")
+
+  // Privacy Settings
+  profileVisibility   String  @default("public") @map("profile_visibility") // public, private, buyers-only
+  showContactInfo     Boolean @default(true) @map("show_contact_info")
+  showLastSeen        Boolean @default(true) @map("show_last_seen")
+  allowDirectMessages Boolean @default(true) @map("allow_direct_messages")
+
+  // Preferences
+  theme    String @default("system") // light, dark, system
+  language String @default("en")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }
 
 // Categories
@@ -96,7 +153,13 @@ model Listing {
   city        String?
   latitude    Decimal?      @db.Decimal(10, 8)
   longitude   Decimal?      @db.Decimal(11, 8)
+  locationAddress String?   @map("location_address") // Full formatted address
+  locationCity String?      @map("location_city") // City name
+  locationCountry String?   @map("location_country") // Country name
+  locationPlaceId String?   @map("location_place_id") // Google Places ID
   status      ListingStatus @default(DRAFT)
+  condition   ListingCondition? @default(GOOD)
+  negotiable  NegotiableStatus @default(FIXED_PRICE)
   isVip       Boolean       @default(false) @map("is_vip")
   isFeatured  Boolean       @default(false) @map("is_featured")
   createdAt   DateTime      @default(now()) @map("created_at")
@@ -111,6 +174,7 @@ model Listing {
   favorites Favorite[]
   reviews   Review[]
   reports   Report[]
+  views     ListingView[]
 
   @@map("listings")
 }
@@ -232,4 +296,20 @@ model Report {
   reporter User    @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@map("reports")
+}
+
+// Listing Views Tracking
+model ListingView {
+  id        Int      @id @default(autoincrement())
+  listingId Int      @map("listing_id")
+  viewerId  Int?     @map("viewer_id") // Optional for anonymous views
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  viewer  User?   @relation("UserViews", fields: [viewerId], references: [id], onDelete: SetNull)
+
+  @@map("listing_views")
 }

@@ -166,7 +166,7 @@ export class ListingsService {
     return new PaginatedListingsDto(listingDtos, meta);
   }
 
-  async findOne(id: number): Promise<ListingResponseDto> {
+  async findOne(id: number, viewerId?: number, ipAddress?: string, userAgent?: string): Promise<ListingResponseDto> {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
       include: {
@@ -182,7 +182,90 @@ export class ListingsService {
       throw new NotFoundException('Listing not found');
     }
 
+    // Track view (non-blocking)
+    this.trackView(id, viewerId, ipAddress, userAgent).catch(err => {
+      console.error('Failed to track view:', err);
+    });
+
     return this.mapToResponseDto(listing);
+  }
+
+  private async trackView(listingId: number, viewerId?: number, ipAddress?: string, userAgent?: string) {
+    try {
+      await this.prisma.listingView.create({
+        data: {
+          listingId,
+          viewerId,
+          ipAddress,
+          userAgent,
+        },
+      });
+    } catch (error) {
+      // Silently fail view tracking to not affect main functionality
+      console.error('View tracking failed:', error);
+    }
+  }
+
+  async getViewCount(listingId: number): Promise<number> {
+    const count = await this.prisma.listingView.count({
+      where: { listingId },
+    });
+    return count;
+  }
+
+  async getRelatedListings(listingId: number, limit: number = 4): Promise<ListingResponseDto[]> {
+    // First get the current listing to find related ones
+    const currentListing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+      include: { category: true },
+    });
+
+    if (!currentListing) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    // Find related listings based on category, price range, and location
+    const price = Number(currentListing.price);
+    const priceRange = price * 0.3; // 30% price range
+    const minPrice = Math.max(0, price - priceRange);
+    const maxPrice = price + priceRange;
+
+    const relatedListings = await this.prisma.listing.findMany({
+      where: {
+        AND: [
+          { id: { not: listingId } }, // Exclude current listing
+          { status: ListingStatus.ACTIVE },
+          {
+            OR: [
+              { categoryId: currentListing.categoryId }, // Same category
+              {
+                AND: [
+                  { price: { gte: minPrice } },
+                  { price: { lte: maxPrice } }
+                ]
+              }, // Similar price range
+              { city: currentListing.city }, // Same city
+            ],
+          },
+        ],
+      },
+      orderBy: [
+        { categoryId: currentListing.categoryId ? 'desc' : 'asc' }, // Prioritize same category
+        { isFeatured: 'desc' },
+        { isVip: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: limit,
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
+
+    return relatedListings.map(listing => this.mapToResponseDto(listing));
   }
 
   async findMyListings(sellerId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {

@@ -23,7 +23,13 @@ class UpdateListingDto {
     city;
     latitude;
     longitude;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationPlaceId;
     status;
+    condition;
+    negotiable;
 }
 exports.UpdateListingDto = UpdateListingDto;
 __decorate([
@@ -84,9 +90,55 @@ __decorate([
     __metadata("design:type", Number)
 ], UpdateListingDto.prototype, "longitude", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: '123 Main St, New York, NY 10001, USA', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'New York', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'United States', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJOwg_06VPwokRYv534QaPC8g', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationPlaceId", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.ListingStatus, required: false }),
     (0, class_validator_1.IsEnum)(client_1.ListingStatus),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateListingDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        enum: client_1.ListingCondition,
+        example: client_1.ListingCondition.GOOD,
+        description: 'Condition of the item',
+        required: false
+    }),
+    (0, class_validator_1.IsEnum)(client_1.ListingCondition),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "condition", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        enum: client_1.NegotiableStatus,
+        example: client_1.NegotiableStatus.FIXED_PRICE,
+        description: 'Price negotiation status',
+        required: false
+    }),
+    (0, class_validator_1.IsEnum)(client_1.NegotiableStatus),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "negotiable", void 0);
 //# sourceMappingURL=update-listing.dto.js.map

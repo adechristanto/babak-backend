@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("./users.service");
 const create_user_dto_1 = require("./dto/create-user.dto");
 const update_user_dto_1 = require("./dto/update-user.dto");
+const change_password_dto_1 = require("./dto/change-password.dto");
 const user_response_dto_1 = require("./dto/user-response.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
@@ -41,6 +42,10 @@ let UsersController = class UsersController {
     }
     async updateProfile(req, updateUserDto) {
         return this.usersService.update(req.user.id, updateUserDto);
+    }
+    async changePassword(req, changePasswordDto) {
+        await this.usersService.changePassword(req.user.id, changePasswordDto);
+        return { message: 'Password changed successfully' };
     }
     async update(id, updateUserDto) {
         return this.usersService.update(id, updateUserDto);
@@ -98,7 +103,8 @@ __decorate([
 ], UsersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)('profile'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, allow_unverified_decorator_1.AllowUnverified)(),
     (0, swagger_1.ApiOperation)({ summary: 'Update current user profile' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Profile updated successfully', type: user_response_dto_1.UserResponseDto }),
     (0, swagger_1.ApiBearerAuth)(),
@@ -108,6 +114,19 @@ __decorate([
     __metadata("design:paramtypes", [Object, update_user_dto_1.UpdateUserDto]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Patch)('change-password'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Change user password' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Password changed successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Current password is incorrect' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, change_password_dto_1.ChangePasswordDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "changePassword", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),

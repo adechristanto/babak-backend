@@ -13,8 +13,12 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { MessagingModule } from './modules/messaging/messaging.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
+import { OffersModule } from './modules/offers/offers.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 
@@ -70,8 +74,12 @@ import { validate } from './config/env.validation';
     MessagingModule,
     FavoritesModule,
     NotificationsModule,
+    ReviewsModule,
     EmailModule,
     HealthModule,
+    OffersModule,
+    AnalyticsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

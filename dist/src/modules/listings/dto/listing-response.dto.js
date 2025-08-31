@@ -54,6 +54,10 @@ class ListingResponseDto {
     city;
     latitude;
     longitude;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationPlaceId;
     status;
     isVip;
     isFeatured;
@@ -65,6 +69,21 @@ class ListingResponseDto {
     images;
     constructor(partial) {
         Object.assign(this, partial);
+        if (partial.price !== null && partial.price !== undefined) {
+            this.price = typeof partial.price === 'object'
+                ? Number(partial.price.toString())
+                : partial.price;
+        }
+        if (partial.latitude !== null && partial.latitude !== undefined) {
+            this.latitude = typeof partial.latitude === 'object'
+                ? Number(partial.latitude.toString())
+                : partial.latitude;
+        }
+        if (partial.longitude !== null && partial.longitude !== undefined) {
+            this.longitude = typeof partial.longitude === 'object'
+                ? Number(partial.longitude.toString())
+                : partial.longitude;
+        }
     }
 }
 exports.ListingResponseDto = ListingResponseDto;
@@ -108,6 +127,26 @@ __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", Object)
 ], ListingResponseDto.prototype, "longitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '123 Main St, New York, NY 10001, USA' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], ListingResponseDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'New York' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], ListingResponseDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'United States' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], ListingResponseDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJOwg_06VPwokRYv534QaPC8g' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], ListingResponseDto.prototype, "locationPlaceId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.ListingStatus }),
     (0, class_transformer_1.Expose)(),

@@ -20,7 +20,6 @@ const create_thread_dto_1 = require("./dto/create-thread.dto");
 const send_message_dto_1 = require("./dto/send-message.dto");
 const thread_response_dto_1 = require("./dto/thread-response.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
 let MessagingController = class MessagingController {
     messagingService;
     constructor(messagingService) {
@@ -124,7 +123,7 @@ __decorate([
 exports.MessagingController = MessagingController = __decorate([
     (0, swagger_1.ApiTags)('Messaging'),
     (0, common_1.Controller)('messaging'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [messaging_service_1.MessagingService])
 ], MessagingController);

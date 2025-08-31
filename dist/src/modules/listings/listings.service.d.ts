@@ -9,7 +9,10 @@ export declare class ListingsService {
     constructor(prisma: PrismaService);
     create(createListingDto: CreateListingDto, sellerId: number): Promise<ListingResponseDto>;
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
-    findOne(id: number): Promise<ListingResponseDto>;
+    findOne(id: number, viewerId?: number, ipAddress?: string, userAgent?: string): Promise<ListingResponseDto>;
+    private trackView;
+    getViewCount(listingId: number): Promise<number>;
+    getRelatedListings(listingId: number, limit?: number): Promise<ListingResponseDto[]>;
     findMyListings(sellerId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     update(id: number, updateListingDto: UpdateListingDto, userId: number): Promise<ListingResponseDto>;
     remove(id: number, userId: number): Promise<void>;
