@@ -635,6 +635,115 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
       });
     }
   }
+
+  // Vehicle subcategory-specific attributes
+  if (vehiclesCategory) {
+    const cars = createdSubcategories.get('cars');
+    if (cars) {
+      const carAttrs = [
+        { name: 'Drive Type', key: 'drive_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['fwd','rwd','awd','4x4'], displayOrder: 1 },
+        { name: 'Doors', key: 'doors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 6 }, displayOrder: 2 },
+        { name: 'Seats', key: 'seats', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 9 }, displayOrder: 3 },
+        { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
+        { name: 'Trim', key: 'trim', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 5 },
+      ];
+      for (const attr of carAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: cars.id, key: attr.key } },
+          update: {},
+          create: { categoryId: cars.id, ...attr },
+        });
+      }
+    }
+    const trucks = createdSubcategories.get('trucks-and-commercial-vehicles');
+    if (trucks) {
+      const truckAttrs = [
+        { name: 'GVWR', key: 'gvwr', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'kg', validation: { min: 1000, max: 40000, decimalPlaces: 0 }, displayOrder: 1 },
+        { name: 'Payload', key: 'payload', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: 'kg', validation: { min: 0, max: 30000 }, displayOrder: 2 },
+        { name: 'Wheelbase', key: 'wheelbase', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: false, unit: 'mm', validation: { min: 2000, max: 8000 }, displayOrder: 3 },
+        { name: 'Axle Config', key: 'axle_config', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4x2','4x4','6x2','6x4','8x4'], displayOrder: 4 },
+        { name: 'Liftgate', key: 'liftgate', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
+      ];
+      for (const attr of truckAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: trucks.id, key: attr.key } },
+          update: {},
+          create: { categoryId: trucks.id, ...attr },
+        });
+      }
+    }
+    const marine = createdSubcategories.get('marine-vehicles');
+    if (marine) {
+      const marineAttrs = [
+        { name: 'Boat Type', key: 'boat_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['sailboat','motorboat','yacht','inflatable','other'], displayOrder: 1 },
+        { name: 'Length', key: 'boat_length', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'ft', validation: { min: 6, max: 200, decimalPlaces: 1 }, displayOrder: 2 },
+        { name: 'Engine Type', key: 'engine_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['inboard','outboard','jet'], displayOrder: 3 },
+        { name: 'Engine Hours', key: 'engine_hours', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 0, max: 20000 }, displayOrder: 4 },
+        { name: 'Trailer Included', key: 'trailer_included', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
+      ];
+      for (const attr of marineAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: marine.id, key: attr.key } },
+          update: {},
+          create: { categoryId: marine.id, ...attr },
+        });
+      }
+    }
+  }
+
+  // Real Estate subcategory-specific attributes
+  if (realEstateCategory) {
+    const apartments = createdSubcategories.get('apartments');
+    if (apartments) {
+      const aptAttrs = [
+        { name: 'Unit Type', key: 'unit_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['studio','1br','2br','3br','4br_plus'], displayOrder: 1 },
+        { name: 'HOA/Maintenance Fee', key: 'maintenance_fee', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: false, unit: 'USD/mo', validation: { min: 0, max: 5000, decimalPlaces: 2 }, displayOrder: 2 },
+        { name: 'Elevator', key: 'elevator', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 3 },
+        { name: 'Balcony', key: 'balcony', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 4 },
+        { name: 'Parking Type', key: 'parking_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['garage','street','none'], displayOrder: 5 },
+      ];
+      for (const attr of aptAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: apartments.id, key: attr.key } },
+          update: {},
+          create: { categoryId: apartments.id, ...attr },
+        });
+      }
+    }
+    const houses = createdSubcategories.get('houses');
+    if (houses) {
+      const houseAttrs = [
+        { name: 'Lot Size', key: 'lot_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'm²', validation: { min: 1, max: 100000 }, displayOrder: 1 },
+        { name: 'Number of Floors', key: 'num_floors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 1, max: 10 }, displayOrder: 2 },
+        { name: 'Garage Type', key: 'garage_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['attached','detached','carport','none'], displayOrder: 3 },
+        { name: 'Basement', key: 'basement', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['none','unfinished','finished'], displayOrder: 4 },
+      ];
+      for (const attr of houseAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: houses.id, key: attr.key } },
+          update: {},
+          create: { categoryId: houses.id, ...attr },
+        });
+      }
+    }
+    const land = createdSubcategories.get('land');
+    if (land) {
+      const landAttrs = [
+        { name: 'Land Type', key: 'land_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['residential','commercial','agricultural'], displayOrder: 1 },
+        { name: 'Zoning', key: 'zoning', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 2 },
+        { name: 'Frontage', key: 'frontage', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: false, unit: 'm', validation: { min: 1, max: 1000, decimalPlaces: 1 }, displayOrder: 3 },
+        { name: 'Access Road', key: 'access_road', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['paved','gravel','dirt'], displayOrder: 4 },
+        { name: 'Utilities', key: 'utilities', type: AttributeType.MULTISELECT, dataType: AttributeDataType.JSON, required: false, searchable: true, options: ['water','electricity','gas','sewer','internet'], displayOrder: 5 },
+      ];
+      for (const attr of landAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: land.id, key: attr.key } },
+          update: {},
+          create: { categoryId: land.id, ...attr },
+        });
+      }
+    }
+  }
 }
 
 // Sample product data for different categories

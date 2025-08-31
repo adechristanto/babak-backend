@@ -19,6 +19,7 @@ const listings_service_1 = require("./listings.service");
 const create_listing_dto_1 = require("./dto/create-listing.dto");
 const update_listing_dto_1 = require("./dto/update-listing.dto");
 const search_listings_dto_1 = require("./dto/search-listings.dto");
+const listing_attribute_dto_1 = require("./dto/listing-attribute.dto");
 const listing_response_dto_1 = require("./dto/listing-response.dto");
 const paginated_listings_dto_1 = require("./dto/paginated-listings.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
@@ -32,6 +33,9 @@ let ListingsController = class ListingsController {
         return this.listingsService.create(createListingDto, req.user.id);
     }
     async findAll(searchDto) {
+        return this.listingsService.findAll(searchDto);
+    }
+    async searchAdvanced(searchDto) {
         return this.listingsService.findAll(searchDto);
     }
     async findMyListings(searchDto, req) {
@@ -87,6 +91,15 @@ __decorate([
     __metadata("design:paramtypes", [search_listings_dto_1.SearchListingsDto]),
     __metadata("design:returntype", Promise)
 ], ListingsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Post)('search'),
+    (0, swagger_1.ApiOperation)({ summary: 'Advanced search and filter listings (POST body supports complex filters)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Listings retrieved successfully', type: paginated_listings_dto_1.PaginatedListingsDto }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [listing_attribute_dto_1.EnhancedSearchListingsDto]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "searchAdvanced", null);
 __decorate([
     (0, common_1.Get)('my-listings'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

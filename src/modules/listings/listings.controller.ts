@@ -23,6 +23,7 @@ import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
+import { EnhancedSearchListingsDto } from './dto/listing-attribute.dto';
 import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -51,6 +52,14 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Listings retrieved successfully', type: PaginatedListingsDto })
   async findAll(@Query() searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
     return this.listingsService.findAll(searchDto);
+  }
+
+  @Post('search')
+  @ApiOperation({ summary: 'Advanced search and filter listings (POST body supports complex filters)' })
+  @ApiResponse({ status: 200, description: 'Listings retrieved successfully', type: PaginatedListingsDto })
+  async searchAdvanced(@Body() searchDto: EnhancedSearchListingsDto): Promise<PaginatedListingsDto> {
+    // Reuse existing service method which already supports attributeFilters
+    return this.listingsService.findAll(searchDto as unknown as SearchListingsDto);
   }
 
   @Get('my-listings')

@@ -2,6 +2,7 @@ import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
+import { EnhancedSearchListingsDto } from './dto/listing-attribute.dto';
 import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
 export declare class ListingsController {
@@ -9,6 +10,7 @@ export declare class ListingsController {
     constructor(listingsService: ListingsService);
     create(createListingDto: CreateListingDto, req: any): Promise<ListingResponseDto>;
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
+    searchAdvanced(searchDto: EnhancedSearchListingsDto): Promise<PaginatedListingsDto>;
     findMyListings(searchDto: SearchListingsDto, req: any): Promise<PaginatedListingsDto>;
     findOne(id: number, req: any): Promise<ListingResponseDto>;
     update(id: number, updateListingDto: UpdateListingDto, req: any): Promise<ListingResponseDto>;
