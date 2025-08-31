@@ -18,7 +18,7 @@ async function bootstrap() {
     const configService = app.get(config_1.ConfigService);
     const port = configService.get('port') || 3001;
     const nodeEnv = configService.get('nodeEnv') || 'development';
-    const corsOrigins = configService.get('corsOrigins') || ['http://localhost:3000'];
+    const corsOrigins = configService.get('corsOrigins') || ['http://localhost:3000', 'http://localhost:5173'];
     app.useLogger(app.get(nestjs_pino_1.Logger));
     app.use((0, helmet_1.default)());
     app.enableCors({

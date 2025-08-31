@@ -37,8 +37,11 @@ let ListingsController = class ListingsController {
     async findMyListings(searchDto, req) {
         return this.listingsService.findMyListings(req.user.id, searchDto);
     }
-    async findOne(id) {
-        return this.listingsService.findOne(id);
+    async findOne(id, req) {
+        const viewerId = req.user?.id;
+        const ipAddress = req.ip || req.connection?.remoteAddress;
+        const userAgent = req.headers['user-agent'];
+        return this.listingsService.findOne(id, viewerId, ipAddress, userAgent);
     }
     async update(id, updateListingDto, req) {
         return this.listingsService.update(id, updateListingDto, req.user.id);
@@ -52,6 +55,13 @@ let ListingsController = class ListingsController {
     }
     async extendExpiration(id, days = 30, req) {
         return this.listingsService.extendExpiration(id, req.user.id, days);
+    }
+    async getViewCount(id) {
+        const viewCount = await this.listingsService.getViewCount(id);
+        return { viewCount };
+    }
+    async getRelatedListings(id, limit = 4) {
+        return this.listingsService.getRelatedListings(id, limit);
     }
 };
 exports.ListingsController = ListingsController;
@@ -96,8 +106,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], ListingsController.prototype, "findOne", null);
 __decorate([
@@ -164,6 +175,30 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number, Object]),
     __metadata("design:returntype", Promise)
 ], ListingsController.prototype, "extendExpiration", null);
+__decorate([
+    (0, common_1.Get)(':id/views'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get listing view count' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'View count retrieved successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "getViewCount", null);
+__decorate([
+    (0, common_1.Get)(':id/related'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get related listings' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Related listings retrieved successfully', type: [listing_response_dto_1.ListingResponseDto] }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', description: 'Number of related listings to return', required: false, example: 4 }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)('limit', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "getRelatedListings", null);
 exports.ListingsController = ListingsController = __decorate([
     (0, swagger_1.ApiTags)('Listings'),
     (0, common_1.Controller)('listings'),

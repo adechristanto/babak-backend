@@ -550,10 +550,82 @@ async function main() {
     }
   }
 
+  console.log('✅ Products created successfully');
+
+  // Create sample reviews for some listings
+  console.log('⭐ Creating sample reviews...');
+  const listings = await prisma.listing.findMany({
+    take: 20, // Get first 20 listings to add reviews to
+    select: { id: true, sellerId: true }
+  });
+
+  let totalReviews = 0;
+  for (const listing of listings) {
+    // Create 2-5 reviews per listing
+    const numReviews = Math.floor(Math.random() * 4) + 2;
+    
+    for (let i = 0; i < numReviews; i++) {
+      // Alternate between users for reviews
+      const reviewerId = i % 2 === 0 ? user10.id : user11.id;
+      
+      // Skip if reviewer is the same as seller
+      if (reviewerId === listing.sellerId) continue;
+      
+      const rating = Math.floor(Math.random() * 3) + 3; // 3-5 stars
+      const comments = [
+        'Great product, exactly as described!',
+        'Fast delivery and excellent condition.',
+        'Very satisfied with this purchase.',
+        'Good quality for the price.',
+        'Would recommend to others.',
+        'Seller was very responsive.',
+        'Item arrived on time and in perfect condition.',
+        'Excellent service and product quality.',
+        'Highly recommended seller!',
+        'Great communication throughout the process.'
+      ];
+      
+      await prisma.review.create({
+        data: {
+          listingId: listing.id,
+          reviewerId: reviewerId,
+          rating: rating,
+          comment: comments[Math.floor(Math.random() * comments.length)],
+        },
+      });
+      totalReviews++;
+    }
+  }
+
+  // Create sample view tracking data
+  console.log('👁️ Creating sample view tracking...');
+  let totalViews = 0;
+  for (const listing of listings) {
+    // Create 10-50 views per listing
+    const numViews = Math.floor(Math.random() * 41) + 10;
+    
+    for (let i = 0; i < numViews; i++) {
+      // Randomly assign some views to users, some anonymous
+      const viewerId = Math.random() > 0.3 ? (i % 2 === 0 ? user10.id : user11.id) : null;
+      
+      await prisma.listingView.create({
+        data: {
+          listingId: listing.id,
+          viewerId: viewerId,
+          ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
+      totalViews++;
+    }
+  }
+
   console.log('✅ Database seeding completed!');
   console.log(`👤 User10: pratomoadhe+10@gmail.com / Squirrel.123`);
   console.log(`👤 User11: pratomoadhe+11@gmail.com / Squirrel.123`);
   console.log(`📦 Total products created: ${totalProducts}`);
+  console.log(`⭐ Total reviews created: ${totalReviews}`);
+  console.log(`👁️ Total views tracked: ${totalViews}`);
   console.log(`📁 Categories created: ${categories.length} main categories with subcategories`);
 }
 

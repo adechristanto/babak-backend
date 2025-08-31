@@ -62,6 +62,7 @@ model User {
   reviews       Review[]
   notifications Notification[]
   reports       Report[]
+  views         ListingView[] @relation("UserViews")
 
   @@map("users")
 }
@@ -128,6 +129,7 @@ model Listing {
   favorites Favorite[]
   reviews   Review[]
   reports   Report[]
+  views     ListingView[]
 
   @@map("listings")
 }
@@ -249,4 +251,20 @@ model Report {
   reporter User    @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@map("reports")
+}
+
+// Listing Views Tracking
+model ListingView {
+  id        Int      @id @default(autoincrement())
+  listingId Int      @map("listing_id")
+  viewerId  Int?     @map("viewer_id") // Optional for anonymous views
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  viewer  User?   @relation("UserViews", fields: [viewerId], references: [id], onDelete: SetNull)
+
+  @@map("listing_views")
 }

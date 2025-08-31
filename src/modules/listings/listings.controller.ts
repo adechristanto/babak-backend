@@ -70,8 +70,15 @@ export class ListingsController {
   @ApiResponse({ status: 200, description: 'Listing retrieved successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   @ApiParam({ name: 'id', description: 'Listing ID' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<ListingResponseDto> {
-    return this.listingsService.findOne(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+  ): Promise<ListingResponseDto> {
+    const viewerId = req.user?.id;
+    const ipAddress = req.ip || req.connection?.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    
+    return this.listingsService.findOne(id, viewerId, ipAddress, userAgent);
   }
 
   @Patch(':id')
@@ -137,5 +144,28 @@ export class ListingsController {
     @Request() req: any,
   ): Promise<ListingResponseDto> {
     return this.listingsService.extendExpiration(id, req.user.id, days);
+  }
+
+  @Get(':id/views')
+  @ApiOperation({ summary: 'Get listing view count' })
+  @ApiResponse({ status: 200, description: 'View count retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  @ApiParam({ name: 'id', description: 'Listing ID' })
+  async getViewCount(@Param('id', ParseIntPipe) id: number): Promise<{ viewCount: number }> {
+    const viewCount = await this.listingsService.getViewCount(id);
+    return { viewCount };
+  }
+
+  @Get(':id/related')
+  @ApiOperation({ summary: 'Get related listings' })
+  @ApiResponse({ status: 200, description: 'Related listings retrieved successfully', type: [ListingResponseDto] })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  @ApiParam({ name: 'id', description: 'Listing ID' })
+  @ApiQuery({ name: 'limit', description: 'Number of related listings to return', required: false, example: 4 })
+  async getRelatedListings(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('limit', ParseIntPipe) limit: number = 4,
+  ): Promise<ListingResponseDto[]> {
+    return this.listingsService.getRelatedListings(id, limit);
   }
 }

@@ -126,7 +126,7 @@ let ListingsService = class ListingsService {
         const meta = new paginated_listings_dto_1.PaginationMetaDto(page || 1, limit || 20, total);
         return new paginated_listings_dto_1.PaginatedListingsDto(listingDtos, meta);
     }
-    async findOne(id) {
+    async findOne(id, viewerId, ipAddress, userAgent) {
         const listing = await this.prisma.listing.findUnique({
             where: { id },
             include: {
@@ -140,7 +140,79 @@ let ListingsService = class ListingsService {
         if (!listing) {
             throw new common_1.NotFoundException('Listing not found');
         }
+        this.trackView(id, viewerId, ipAddress, userAgent).catch(err => {
+            console.error('Failed to track view:', err);
+        });
         return this.mapToResponseDto(listing);
+    }
+    async trackView(listingId, viewerId, ipAddress, userAgent) {
+        try {
+            await this.prisma.listingView.create({
+                data: {
+                    listingId,
+                    viewerId,
+                    ipAddress,
+                    userAgent,
+                },
+            });
+        }
+        catch (error) {
+            console.error('View tracking failed:', error);
+        }
+    }
+    async getViewCount(listingId) {
+        const count = await this.prisma.listingView.count({
+            where: { listingId },
+        });
+        return count;
+    }
+    async getRelatedListings(listingId, limit = 4) {
+        const currentListing = await this.prisma.listing.findUnique({
+            where: { id: listingId },
+            include: { category: true },
+        });
+        if (!currentListing) {
+            throw new common_1.NotFoundException('Listing not found');
+        }
+        const price = Number(currentListing.price);
+        const priceRange = price * 0.3;
+        const minPrice = Math.max(0, price - priceRange);
+        const maxPrice = price + priceRange;
+        const relatedListings = await this.prisma.listing.findMany({
+            where: {
+                AND: [
+                    { id: { not: listingId } },
+                    { status: client_1.ListingStatus.ACTIVE },
+                    {
+                        OR: [
+                            { categoryId: currentListing.categoryId },
+                            {
+                                AND: [
+                                    { price: { gte: minPrice } },
+                                    { price: { lte: maxPrice } }
+                                ]
+                            },
+                            { city: currentListing.city },
+                        ],
+                    },
+                ],
+            },
+            orderBy: [
+                { categoryId: currentListing.categoryId ? 'desc' : 'asc' },
+                { isFeatured: 'desc' },
+                { isVip: 'desc' },
+                { createdAt: 'desc' },
+            ],
+            take: limit,
+            include: {
+                seller: true,
+                category: true,
+                images: {
+                    orderBy: { position: 'asc' },
+                },
+            },
+        });
+        return relatedListings.map(listing => this.mapToResponseDto(listing));
     }
     async findMyListings(sellerId, searchDto) {
         return this.findAll({ ...searchDto, sellerId });

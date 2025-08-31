@@ -10,11 +10,15 @@ export declare class ListingsController {
     create(createListingDto: CreateListingDto, req: any): Promise<ListingResponseDto>;
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     findMyListings(searchDto: SearchListingsDto, req: any): Promise<PaginatedListingsDto>;
-    findOne(id: number): Promise<ListingResponseDto>;
+    findOne(id: number, req: any): Promise<ListingResponseDto>;
     update(id: number, updateListingDto: UpdateListingDto, req: any): Promise<ListingResponseDto>;
     remove(id: number, req: any): Promise<{
         message: string;
     }>;
     publish(id: number, req: any): Promise<ListingResponseDto>;
     extendExpiration(id: number, days: number | undefined, req: any): Promise<ListingResponseDto>;
+    getViewCount(id: number): Promise<{
+        viewCount: number;
+    }>;
+    getRelatedListings(id: number, limit?: number): Promise<ListingResponseDto[]>;
 }

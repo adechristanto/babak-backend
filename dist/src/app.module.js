@@ -25,8 +25,10 @@ const uploads_module_1 = require("./modules/uploads/uploads.module");
 const messaging_module_1 = require("./modules/messaging/messaging.module");
 const favorites_module_1 = require("./modules/favorites/favorites.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
+const reviews_module_1 = require("./modules/reviews/reviews.module");
 const email_module_1 = require("./modules/email/email.module");
 const health_module_1 = require("./modules/health/health.module");
+const offers_module_1 = require("./modules/offers/offers.module");
 const configuration_1 = __importDefault(require("./config/configuration"));
 const env_validation_1 = require("./config/env.validation");
 let AppModule = class AppModule {
@@ -76,8 +78,10 @@ exports.AppModule = AppModule = __decorate([
             messaging_module_1.MessagingModule,
             favorites_module_1.FavoritesModule,
             notifications_module_1.NotificationsModule,
+            reviews_module_1.ReviewsModule,
             email_module_1.EmailModule,
             health_module_1.HealthModule,
+            offers_module_1.OffersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
