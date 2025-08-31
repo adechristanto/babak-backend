@@ -5,6 +5,7 @@ import { ListingImagesService } from './images/listing-images.service';
 import { ListingImagesController } from './images/listing-images.controller';
 import { ListingUpgradesService } from './listing-upgrades.service';
 import { ListingUpgradesController } from './listing-upgrades.controller';
+import { ListingAttributesService } from './listing-attributes.service';
 import { UploadsModule } from '../uploads/uploads.module';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
@@ -12,7 +13,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [UploadsModule, AuthModule, UsersModule],
   controllers: [ListingsController, ListingImagesController, ListingUpgradesController],
-  providers: [ListingsService, ListingImagesService, ListingUpgradesService],
-  exports: [ListingsService, ListingImagesService, ListingUpgradesService],
+  providers: [ListingsService, ListingImagesService, ListingUpgradesService, ListingAttributesService],
+  exports: [ListingsService, ListingImagesService, ListingUpgradesService, ListingAttributesService],
 })
 export class ListingsModule {}
