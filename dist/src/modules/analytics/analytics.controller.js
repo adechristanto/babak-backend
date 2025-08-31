@@ -18,7 +18,6 @@ const swagger_1 = require("@nestjs/swagger");
 const analytics_service_1 = require("./analytics.service");
 const dashboard_stats_dto_1 = require("./dto/dashboard-stats.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
 let AnalyticsController = class AnalyticsController {
     analyticsService;
     constructor(analyticsService) {
@@ -79,7 +78,7 @@ __decorate([
 exports.AnalyticsController = AnalyticsController = __decorate([
     (0, swagger_1.ApiTags)('Analytics'),
     (0, common_1.Controller)('analytics'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [analytics_service_1.AnalyticsService])
 ], AnalyticsController);

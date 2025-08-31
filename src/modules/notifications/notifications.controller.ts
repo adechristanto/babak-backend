@@ -24,7 +24,7 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Notifications')
 @Controller('notifications')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}

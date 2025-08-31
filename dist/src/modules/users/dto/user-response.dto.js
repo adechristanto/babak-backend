@@ -20,6 +20,12 @@ class UserResponseDto {
     avatarUrl;
     phone;
     location;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationLatitude;
+    locationLongitude;
+    locationPlaceId;
     bio;
     role;
     emailVerified;
@@ -30,6 +36,16 @@ class UserResponseDto {
     emailVerificationExpires;
     constructor(partial) {
         Object.assign(this, partial);
+        if (partial.locationLatitude !== null && partial.locationLatitude !== undefined) {
+            this.locationLatitude = typeof partial.locationLatitude === 'object'
+                ? Number(partial.locationLatitude.toString())
+                : partial.locationLatitude;
+        }
+        if (partial.locationLongitude !== null && partial.locationLongitude !== undefined) {
+            this.locationLongitude = typeof partial.locationLongitude === 'object'
+                ? Number(partial.locationLongitude.toString())
+                : partial.locationLongitude;
+        }
     }
 }
 exports.UserResponseDto = UserResponseDto;
@@ -63,6 +79,36 @@ __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", Object)
 ], UserResponseDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus, Syria' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Syria' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 33.5138 }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationLatitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 36.2765 }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationLongitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJi8mnMiKyGhURuiw1EyBCa2o' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "locationPlaceId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 'Bio description' }),
     (0, class_transformer_1.Expose)(),

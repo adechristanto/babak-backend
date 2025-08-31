@@ -18,7 +18,6 @@ const swagger_1 = require("@nestjs/swagger");
 const settings_service_1 = require("./settings.service");
 const user_settings_dto_1 = require("./dto/user-settings.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
 let SettingsController = class SettingsController {
     settingsService;
     constructor(settingsService) {
@@ -62,7 +61,7 @@ __decorate([
 exports.SettingsController = SettingsController = __decorate([
     (0, swagger_1.ApiTags)('Settings'),
     (0, common_1.Controller)('settings'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [settings_service_1.SettingsService])
 ], SettingsController);

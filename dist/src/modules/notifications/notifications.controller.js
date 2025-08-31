@@ -18,7 +18,6 @@ const swagger_1 = require("@nestjs/swagger");
 const notifications_service_1 = require("./notifications.service");
 const notification_response_dto_1 = require("./dto/notification-response.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
 let NotificationsController = class NotificationsController {
     notificationsService;
     constructor(notificationsService) {
@@ -119,7 +118,7 @@ __decorate([
 exports.NotificationsController = NotificationsController = __decorate([
     (0, swagger_1.ApiTags)('Notifications'),
     (0, common_1.Controller)('notifications'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [notifications_service_1.NotificationsService])
 ], NotificationsController);

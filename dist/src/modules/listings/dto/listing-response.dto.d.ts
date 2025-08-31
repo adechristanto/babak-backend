@@ -17,6 +17,10 @@ export declare class ListingResponseDto {
     city: string | null;
     latitude: number | null;
     longitude: number | null;
+    locationAddress: string | null;
+    locationCity: string | null;
+    locationCountry: string | null;
+    locationPlaceId: string | null;
     status: ListingStatus;
     isVip: boolean;
     isFeatured: boolean;
@@ -26,5 +30,5 @@ export declare class ListingResponseDto {
     seller: UserResponseDto;
     category: CategoryResponseDto | null;
     images: ListingImageResponseDto[];
-    constructor(partial: Partial<ListingResponseDto>);
+    constructor(partial: any);
 }

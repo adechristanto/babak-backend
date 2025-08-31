@@ -8,6 +8,10 @@ export declare class UpdateListingDto {
     city?: string;
     latitude?: number;
     longitude?: number;
+    locationAddress?: string;
+    locationCity?: string;
+    locationCountry?: string;
+    locationPlaceId?: string;
     status?: ListingStatus;
     condition?: ListingCondition;
     negotiable?: NegotiableStatus;

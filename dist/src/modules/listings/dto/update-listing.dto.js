@@ -23,6 +23,10 @@ class UpdateListingDto {
     city;
     latitude;
     longitude;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationPlaceId;
     status;
     condition;
     negotiable;
@@ -85,6 +89,30 @@ __decorate([
     (0, class_transformer_1.Transform)(({ value }) => parseFloat(value)),
     __metadata("design:type", Number)
 ], UpdateListingDto.prototype, "longitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '123 Main St, New York, NY 10001, USA', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'New York', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'United States', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJOwg_06VPwokRYv534QaPC8g', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateListingDto.prototype, "locationPlaceId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.ListingStatus, required: false }),
     (0, class_validator_1.IsEnum)(client_1.ListingStatus),

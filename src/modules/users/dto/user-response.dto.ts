@@ -27,6 +27,30 @@ export class UserResponseDto {
   @Expose()
   location: string | null;
 
+  @ApiProperty({ example: 'Damascus, Syria' })
+  @Expose()
+  locationAddress: string | null;
+
+  @ApiProperty({ example: 'Damascus' })
+  @Expose()
+  locationCity: string | null;
+
+  @ApiProperty({ example: 'Syria' })
+  @Expose()
+  locationCountry: string | null;
+
+  @ApiProperty({ example: 33.5138 })
+  @Expose()
+  locationLatitude: number | null;
+
+  @ApiProperty({ example: 36.2765 })
+  @Expose()
+  locationLongitude: number | null;
+
+  @ApiProperty({ example: 'ChIJi8mnMiKyGhURuiw1EyBCa2o' })
+  @Expose()
+  locationPlaceId: string | null;
+
   @ApiProperty({ example: 'Bio description' })
   @Expose()
   bio: string | null;
@@ -56,7 +80,20 @@ export class UserResponseDto {
   @Exclude()
   emailVerificationExpires: Date | null;
 
-  constructor(partial: Partial<UserResponseDto>) {
+  constructor(partial: any) {
     Object.assign(this, partial);
+
+    // Convert Decimal types to numbers for location coordinates
+    if (partial.locationLatitude !== null && partial.locationLatitude !== undefined) {
+      this.locationLatitude = typeof partial.locationLatitude === 'object'
+        ? Number(partial.locationLatitude.toString())
+        : partial.locationLatitude;
+    }
+
+    if (partial.locationLongitude !== null && partial.locationLongitude !== undefined) {
+      this.locationLongitude = typeof partial.locationLongitude === 'object'
+        ? Number(partial.locationLongitude.toString())
+        : partial.locationLongitude;
+    }
   }
 }

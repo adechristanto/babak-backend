@@ -12,11 +12,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateUserDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 class UpdateUserDto {
     name;
     avatarUrl;
     phone;
     location;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationLatitude;
+    locationLongitude;
+    locationPlaceId;
     bio;
 }
 exports.UpdateUserDto = UpdateUserDto;
@@ -44,6 +51,42 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus, Syria', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Syria', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 33.5138, required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => value ? parseFloat(value) : undefined),
+    __metadata("design:type", Number)
+], UpdateUserDto.prototype, "locationLatitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 36.2765, required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => value ? parseFloat(value) : undefined),
+    __metadata("design:type", Number)
+], UpdateUserDto.prototype, "locationLongitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJi8mnMiKyGhURuiw1EyBCa2o', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "locationPlaceId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 'Bio description', required: false }),
     (0, class_validator_1.IsString)(),

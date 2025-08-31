@@ -70,7 +70,8 @@ export class UsersController {
   }
 
   @Patch('profile')
-  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+  @UseGuards(JwtAuthGuard)
+  @AllowUnverified()
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully', type: UserResponseDto })
   @ApiBearerAuth()

@@ -19,7 +19,7 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Settings')
 @Controller('settings')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}

@@ -49,6 +49,12 @@ model User {
   avatarUrl   String?  @map("avatar_url")
   phone       String?
   location    String?
+  locationAddress String? @map("location_address") // Full formatted address
+  locationCity String? @map("location_city") // City name
+  locationCountry String? @map("location_country") // Country name
+  locationLatitude Decimal? @map("location_latitude") @db.Decimal(10, 8)
+  locationLongitude Decimal? @map("location_longitude") @db.Decimal(11, 8)
+  locationPlaceId String? @map("location_place_id") // Google Places ID
   bio         String?
   role        UserRole @default(USER)
   emailVerified Boolean @default(false) @map("email_verified")
@@ -147,6 +153,10 @@ model Listing {
   city        String?
   latitude    Decimal?      @db.Decimal(10, 8)
   longitude   Decimal?      @db.Decimal(11, 8)
+  locationAddress String?   @map("location_address") // Full formatted address
+  locationCity String?      @map("location_city") // City name
+  locationCountry String?   @map("location_country") // Country name
+  locationPlaceId String?   @map("location_place_id") // Google Places ID
   status      ListingStatus @default(DRAFT)
   condition   ListingCondition? @default(GOOD)
   negotiable  NegotiableStatus @default(FIXED_PRICE)

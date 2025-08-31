@@ -22,7 +22,7 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Favorites')
 @Controller('favorites')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}

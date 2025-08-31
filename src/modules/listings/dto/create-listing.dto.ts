@@ -52,6 +52,26 @@ export class CreateListingDto {
   @Transform(({ value }) => parseFloat(value as string))
   longitude?: number;
 
+  @ApiProperty({ example: '123 Main St, New York, NY 10001, USA' })
+  @IsString()
+  @IsOptional()
+  locationAddress?: string;
+
+  @ApiProperty({ example: 'New York' })
+  @IsString()
+  @IsOptional()
+  locationCity?: string;
+
+  @ApiProperty({ example: 'United States' })
+  @IsString()
+  @IsOptional()
+  locationCountry?: string;
+
+  @ApiProperty({ example: 'ChIJOwg_06VPwokRYv534QaPC8g' })
+  @IsString()
+  @IsOptional()
+  locationPlaceId?: string;
+
   @ApiProperty({ 
     enum: ListingCondition, 
     example: ListingCondition.GOOD,

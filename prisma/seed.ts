@@ -3,6 +3,17 @@ import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
 
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
+}
+
 // Sample product data for different categories
 const productData = {
   'real-estate': [
@@ -200,7 +211,254 @@ async function main() {
 
   console.log('✅ Users created successfully');
 
+  // New Categories from user
+  const newCategoryData = [
+      {
+        name: 'Real Estate',
+        subcategories: [
+          'Apartments',
+          'Houses',
+          'Land',
+          'Shops and offices',
+          'Factory and workshops',
+          'Tourist properties'
+        ]
+      },
+      {
+        name: 'Vehicles',
+        subcategories: [
+          'Cars',
+          'Motorcycles',
+          'Trucks and Commercial Vehicles',
+          'Agricultural and Industrial Vehicles',
+          'Marine Vehicles'
+        ]
+      },
+      {
+        name: 'Electronics',
+        subcategories: [
+          'Televisions',
+          'Refrigerators and Freezers',
+          'Washing Machines & Dryers',
+          'Ovens and Microwaves',
+          'Vacuum Cleaners',
+          'Cameras',
+          'Video Games',
+          'Air Conditioners',
+          'Water Heaters',
+          'Audio Equipment',
+          'E-Books',
+          'Security and Surveillance Systems',
+          'Home and Kitchen Appliances',
+          'Uncategorized Appliances'
+        ]
+      },
+      {
+        name: 'Furniture',
+        subcategories: [
+          'Bedrooms',
+          'Living Rooms',
+          'Dining Rooms',
+          'Kids\' Rooms',
+          'Guest Rooms',
+          'Office Furniture',
+          'Garden Furniture',
+          'Lighting and Décor'
+        ]
+      },
+      {
+        name: 'Phones and Accessories',
+        subcategories: [
+          'Mobile Phones',
+          'iPads',
+          'Smart Watches',
+          'Power bank',
+          'Mobile covers',
+          'Headphones',
+          'Chargers',
+          'Phone Numbers',
+          'Spare Parts'
+        ]
+      },
+      {
+        name: 'Computers and Accessories',
+        subcategories: [
+          'Laptops',
+          'Desktop Computers',
+          'Monitors',
+          'Mouses',
+          'Cameras',
+          'Keyboards',
+          'Printers and Scanners',
+          'Audio',
+          'Networks and Communications',
+          'Software',
+          'Computer Hardware',
+          'Gaming Consoles (PlayStation)'
+        ]
+      },
+      {
+        name: "Children's World",
+        subcategories: [
+          'Clothing & Shoes',
+          'Strollers',
+          'Car Seats',
+          'Toys',
+          'Books',
+          'Health and Care',
+          'Nutrition',
+          'Uncategorized'
+        ]
+      },
+      {
+        name: 'Clothing',
+        subcategories: [
+          'Men\'s Clothing',
+          'Women\'s Clothing',
+          'children\'s clothing',
+          'Bags',
+          'Watches and Jewelry',
+          'Other'
+        ]
+      },
+      {
+        name: 'Jobs',
+        subcategories: [
+          'Job Vacancies',
+          'searching for Job'
+        ]
+      },
+      {
+        name: 'Solar Energy',
+        subcategories: [
+          'Solar Panels',
+          'Inverters',
+          'Batteries',
+          'Charge Controllers',
+          'Cables and Accessories',
+          'Turnkey Systems',
+          'Services'
+        ]
+      },
+      {
+        name: 'Services and Businesses',
+        subcategories: [
+          'Home Services',
+          'Car Services',
+          'Business and Corporate Services',
+          'Technical Services',
+          'Education/Courses',
+          'Medical and Healthcare Services',
+          'Transportation and Logistics',
+          'Miscellaneous Services',
+          'Other'
+        ]
+      },
+      {
+        name: 'Handicrafts',
+        subcategories: [
+          'Textiles and Fabrics',
+          'Accessories and Jewelry',
+          'Wood Products',
+          'Pottery and Ceramics',
+          'Glass and Metals',
+          'Leatherware',
+          'Natural and healthy products'
+        ]
+      },
+      {
+        name: 'Building Materials',
+        subcategories: [
+          'Basic Materials',
+          'Cladding and Finishing Materials',
+          'Tools and Equipment',
+          'Wood and Wood Derivatives',
+          'Sanitary Ware and Plumbing',
+          'Electrical and Lighting',
+          'Glass and Aluminum'
+        ]
+      },
+      {
+        name: 'Industrial Equipment',
+        subcategories: [
+          'Workshop Equipment',
+          'Restaurant and Cafe Equipment',
+          'Bakery Equipment',
+          'Construction and Heavy Industry Equipment',
+          'Agricultural and Industrial Equipment',
+          'Production Lines',
+          'Industrial Safety Equipment',
+          'General Equipment',
+          'Spare Parts and Maintenance',
+          'Generators',
+          'Industrial Textile and Sewing Machines',
+          'Unclassified Equipment'
+        ]
+      },
+      {
+        name: 'Sports Equipment',
+        subcategories: [
+          'Bodybuilding and Fitness Equipment',
+          'Individual Sports Equipment',
+          'Martial Arts and Martial Arts Equipment',
+          'Outdoor Sports Equipment',
+          'Sports Accessories'
+        ]
+      },
+      {
+        name: 'Musical Equipment',
+        subcategories: [
+          'Stringed Instruments',
+          'Percussion Instruments',
+          'Wind Instruments',
+          'Keyboard Instruments',
+          'Recording Equipment',
+          'Accessories'
+        ]
+      },
+      {
+        name: 'Animals',
+        subcategories: [
+          'Pets',
+          'Farm Animals',
+          'Animal Supplies',
+          'Animal Services'
+        ]
+      },
+      {
+        name: 'Medical Supplies',
+        subcategories: [
+          'Medical Devices',
+          'Medical Instruments',
+          'Consumables Laboratory',
+          'Supplies Medical',
+          'Beds and Chairs'
+        ]
+      },
+      {
+        name: 'Foodstuffs',
+        subcategories: [
+          'Basic Ingredients',
+          'Oils and Fats',
+          'Canned Foods',
+          'Beverages',
+          'Dairy Products',
+          'Meat, Poultry, and Fish',
+          'Vegetables and Fruits',
+          'Unclassified Products'
+        ]
+      }
+    ];
+
+    const categories = newCategoryData.map(c => ({
+      name: c.name,
+      slug: slugify(c.name),
+      subcategories: c.subcategories.map(s => ({ name: s, slug: slugify(s) })),
+    }));
+
+
   // Create all categories and subcategories
+  /*
   const categories = [
     {
       name: 'Real Estate',
@@ -292,7 +550,7 @@ async function main() {
       ]
     },
     {
-      name: 'Children\'s World',
+      name: "Children's World",
       slug: 'childrens-world',
       subcategories: [
         { name: 'Clothing & Shoes', slug: 'clothing-shoes' },
@@ -456,6 +714,7 @@ async function main() {
       ]
     }
   ];
+  */
 
   const createdCategories = new Map();
   const createdSubcategories = new Map();

@@ -26,7 +26,7 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @ApiTags('Messaging')
 @Controller('messaging')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class MessagingController {
   constructor(private readonly messagingService: MessagingService) {}

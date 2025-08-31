@@ -36,6 +36,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const argon2 = __importStar(require("argon2"));
 const prisma = new client_1.PrismaClient();
+function slugify(text) {
+    return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+}
 const productData = {
     'real-estate': [
         { title: 'Modern 2BR Apartment in City Center', price: 250000, description: 'Beautiful modern apartment with city views' },
@@ -225,261 +235,248 @@ async function main() {
         },
     });
     console.log('✅ Users created successfully');
-    const categories = [
+    const newCategoryData = [
         {
             name: 'Real Estate',
-            slug: 'real-estate',
             subcategories: [
-                { name: 'Apartments', slug: 'apartments' },
-                { name: 'Houses', slug: 'houses' },
-                { name: 'Land', slug: 'land' },
-                { name: 'Shops and Offices', slug: 'shops-offices' },
-                { name: 'Factory and Workshops', slug: 'factory-workshops' },
-                { name: 'Tourist Properties', slug: 'tourist-properties' }
+                'Apartments',
+                'Houses',
+                'Land',
+                'Shops and offices',
+                'Factory and workshops',
+                'Tourist properties'
             ]
         },
         {
             name: 'Vehicles',
-            slug: 'vehicles',
             subcategories: [
-                { name: 'Cars', slug: 'cars' },
-                { name: 'Motorcycles', slug: 'motorcycles' },
-                { name: 'Trucks and Commercial Vehicles', slug: 'trucks-commercial' },
-                { name: 'Agricultural and Industrial Vehicles', slug: 'agricultural-industrial' },
-                { name: 'Marine Vehicles', slug: 'marine-vehicles' }
+                'Cars',
+                'Motorcycles',
+                'Trucks and Commercial Vehicles',
+                'Agricultural and Industrial Vehicles',
+                'Marine Vehicles'
             ]
         },
         {
             name: 'Electronics',
-            slug: 'electronics',
             subcategories: [
-                { name: 'Televisions', slug: 'televisions' },
-                { name: 'Refrigerators and Freezers', slug: 'refrigerators-freezers' },
-                { name: 'Washing Machines & Dryers', slug: 'washing-machines-dryers' },
-                { name: 'Ovens and Microwaves', slug: 'ovens-microwaves' },
-                { name: 'Vacuum Cleaners', slug: 'vacuum-cleaners' },
-                { name: 'Cameras', slug: 'cameras' },
-                { name: 'Video Games', slug: 'video-games' },
-                { name: 'Air Conditioners', slug: 'air-conditioners' },
-                { name: 'Water Heaters', slug: 'water-heaters' },
-                { name: 'Audio Equipment', slug: 'audio-equipment' },
-                { name: 'E-Books', slug: 'e-books' },
-                { name: 'Security and Surveillance Systems', slug: 'security-surveillance' },
-                { name: 'Home and Kitchen Appliances', slug: 'home-kitchen-appliances' },
-                { name: 'Uncategorized Appliances', slug: 'uncategorized-appliances' }
+                'Televisions',
+                'Refrigerators and Freezers',
+                'Washing Machines & Dryers',
+                'Ovens and Microwaves',
+                'Vacuum Cleaners',
+                'Cameras',
+                'Video Games',
+                'Air Conditioners',
+                'Water Heaters',
+                'Audio Equipment',
+                'E-Books',
+                'Security and Surveillance Systems',
+                'Home and Kitchen Appliances',
+                'Uncategorized Appliances'
             ]
         },
         {
             name: 'Furniture',
-            slug: 'furniture',
             subcategories: [
-                { name: 'Bedrooms', slug: 'bedrooms' },
-                { name: 'Living Rooms', slug: 'living-rooms' },
-                { name: 'Dining Rooms', slug: 'dining-rooms' },
-                { name: 'Kids\' Rooms', slug: 'kids-rooms' },
-                { name: 'Guest Rooms', slug: 'guest-rooms' },
-                { name: 'Office Furniture', slug: 'office-furniture' },
-                { name: 'Garden Furniture', slug: 'garden-furniture' },
-                { name: 'Lighting and Decor', slug: 'lighting-decor' }
+                'Bedrooms',
+                'Living Rooms',
+                'Dining Rooms',
+                'Kids\' Rooms',
+                'Guest Rooms',
+                'Office Furniture',
+                'Garden Furniture',
+                'Lighting and Décor'
             ]
         },
         {
             name: 'Phones and Accessories',
-            slug: 'phones-accessories',
             subcategories: [
-                { name: 'Mobile Phones', slug: 'mobile-phones' },
-                { name: 'iPads', slug: 'ipads' },
-                { name: 'Smart Watches', slug: 'smart-watches' },
-                { name: 'Power Bank', slug: 'power-bank' },
-                { name: 'Mobile Covers', slug: 'mobile-covers' },
-                { name: 'Headphones', slug: 'headphones' },
-                { name: 'Chargers', slug: 'chargers' },
-                { name: 'Phone Numbers', slug: 'phone-numbers' }
+                'Mobile Phones',
+                'iPads',
+                'Smart Watches',
+                'Power bank',
+                'Mobile covers',
+                'Headphones',
+                'Chargers',
+                'Phone Numbers',
+                'Spare Parts'
             ]
         },
         {
             name: 'Computers and Accessories',
-            slug: 'computers-accessories',
             subcategories: [
-                { name: 'Laptops', slug: 'laptops' },
-                { name: 'Desktop Computers', slug: 'desktop-computers' },
-                { name: 'Monitors', slug: 'monitors' },
-                { name: 'Mouses', slug: 'mouses' },
-                { name: 'Cameras', slug: 'computer-cameras' },
-                { name: 'Keyboards', slug: 'keyboards' },
-                { name: 'Printers and Scanners', slug: 'printers-scanners' },
-                { name: 'Audio', slug: 'computer-audio' },
-                { name: 'Networks and Communications', slug: 'networks-communications' },
-                { name: 'Software', slug: 'software' },
-                { name: 'Computer Hardware', slug: 'computer-hardware' },
-                { name: 'Gaming Consoles (PlayStation)', slug: 'gaming-consoles' }
+                'Laptops',
+                'Desktop Computers',
+                'Monitors',
+                'Mouses',
+                'Cameras',
+                'Keyboards',
+                'Printers and Scanners',
+                'Audio',
+                'Networks and Communications',
+                'Software',
+                'Computer Hardware',
+                'Gaming Consoles (PlayStation)'
             ]
         },
         {
-            name: 'Children\'s World',
-            slug: 'childrens-world',
+            name: "Children's World",
             subcategories: [
-                { name: 'Clothing & Shoes', slug: 'clothing-shoes' },
-                { name: 'Strollers', slug: 'strollers' },
-                { name: 'Car Seats', slug: 'car-seats' },
-                { name: 'Toys', slug: 'toys' },
-                { name: 'Books', slug: 'books' },
-                { name: 'Health and Care', slug: 'health-care' },
-                { name: 'Nutrition', slug: 'nutrition' },
-                { name: 'Uncategorized', slug: 'children-uncategorized' }
+                'Clothing & Shoes',
+                'Strollers',
+                'Car Seats',
+                'Toys',
+                'Books',
+                'Health and Care',
+                'Nutrition',
+                'Uncategorized'
             ]
         },
         {
             name: 'Clothing',
-            slug: 'clothing',
             subcategories: [
-                { name: 'Men\'s Clothing', slug: 'mens-clothing' },
-                { name: 'Women\'s Clothing', slug: 'womens-clothing' },
-                { name: 'Children\'s Clothing', slug: 'childrens-clothing' },
-                { name: 'Bags', slug: 'bags' },
-                { name: 'Watches and Jewelry', slug: 'watches-jewelry' },
-                { name: 'Other', slug: 'clothing-other' }
+                'Men\'s Clothing',
+                'Women\'s Clothing',
+                'children\'s clothing',
+                'Bags',
+                'Watches and Jewelry',
+                'Other'
             ]
         },
         {
             name: 'Jobs',
-            slug: 'jobs',
             subcategories: [
-                { name: 'Job Vacancies', slug: 'job-vacancies' },
-                { name: 'Searching for Job', slug: 'searching-for-job' }
+                'Job Vacancies',
+                'searching for Job'
             ]
         },
         {
             name: 'Solar Energy',
-            slug: 'solar-energy',
             subcategories: [
-                { name: 'Solar Panels', slug: 'solar-panels' },
-                { name: 'Inverters', slug: 'inverters' },
-                { name: 'Batteries', slug: 'batteries' },
-                { name: 'Charge Controllers', slug: 'charge-controllers' },
-                { name: 'Cables and Accessories', slug: 'cables-accessories' },
-                { name: 'Turnkey Systems', slug: 'turnkey-systems' },
-                { name: 'Services', slug: 'solar-services' }
+                'Solar Panels',
+                'Inverters',
+                'Batteries',
+                'Charge Controllers',
+                'Cables and Accessories',
+                'Turnkey Systems',
+                'Services'
             ]
         },
         {
             name: 'Services and Businesses',
-            slug: 'services-businesses',
             subcategories: [
-                { name: 'Home Services', slug: 'home-services' },
-                { name: 'Car Services', slug: 'car-services' },
-                { name: 'Business and Corporate Services', slug: 'business-corporate-services' },
-                { name: 'Technical Services', slug: 'technical-services' },
-                { name: 'Education/Courses', slug: 'education-courses' },
-                { name: 'Medical and Healthcare Services', slug: 'medical-healthcare-services' },
-                { name: 'Transportation and Logistics', slug: 'transportation-logistics' },
-                { name: 'Miscellaneous Services', slug: 'miscellaneous-services' },
-                { name: 'Other', slug: 'services-other' }
+                'Home Services',
+                'Car Services',
+                'Business and Corporate Services',
+                'Technical Services',
+                'Education/Courses',
+                'Medical and Healthcare Services',
+                'Transportation and Logistics',
+                'Miscellaneous Services',
+                'Other'
             ]
         },
         {
             name: 'Handicrafts',
-            slug: 'handicrafts',
             subcategories: [
-                { name: 'Textiles and Fabrics', slug: 'textiles-fabrics' },
-                { name: 'Accessories and Jewelry', slug: 'accessories-jewelry' },
-                { name: 'Wood Products', slug: 'wood-products' },
-                { name: 'Pottery and Ceramics', slug: 'pottery-ceramics' },
-                { name: 'Glass and Metals', slug: 'glass-metals' },
-                { name: 'Leatherware', slug: 'leatherware' },
-                { name: 'Natural and Healthy Products', slug: 'natural-healthy-products' }
+                'Textiles and Fabrics',
+                'Accessories and Jewelry',
+                'Wood Products',
+                'Pottery and Ceramics',
+                'Glass and Metals',
+                'Leatherware',
+                'Natural and healthy products'
             ]
         },
         {
             name: 'Building Materials',
-            slug: 'building-materials',
             subcategories: [
-                { name: 'Cement and Concrete', slug: 'cement-concrete' },
-                { name: 'Steel and Metals', slug: 'steel-metals' },
-                { name: 'Bricks and Blocks', slug: 'bricks-blocks' },
-                { name: 'Tiles and Flooring', slug: 'tiles-flooring' },
-                { name: 'Paint and Coatings', slug: 'paint-coatings' },
-                { name: 'Plumbing and Electrical', slug: 'plumbing-electrical' },
-                { name: 'Insulation and Roofing', slug: 'insulation-roofing' }
+                'Basic Materials',
+                'Cladding and Finishing Materials',
+                'Tools and Equipment',
+                'Wood and Wood Derivatives',
+                'Sanitary Ware and Plumbing',
+                'Electrical and Lighting',
+                'Glass and Aluminum'
             ]
         },
         {
             name: 'Industrial Equipment',
-            slug: 'industrial-equipment',
             subcategories: [
-                { name: 'Manufacturing Equipment', slug: 'manufacturing-equipment' },
-                { name: 'Construction Equipment', slug: 'construction-equipment' },
-                { name: 'Generators and Power Equipment', slug: 'generators-power' },
-                { name: 'Compressors and Pumps', slug: 'compressors-pumps' },
-                { name: 'Welding Equipment', slug: 'welding-equipment' },
-                { name: 'Material Handling Equipment', slug: 'material-handling' },
-                { name: 'HVAC Equipment', slug: 'hvac-industrial' },
-                { name: 'Testing and Measurement', slug: 'testing-measurement' },
-                { name: 'Safety Equipment', slug: 'safety-equipment' },
-                { name: 'Packaging Equipment', slug: 'packaging-equipment' },
-                { name: 'Cleaning Equipment', slug: 'cleaning-equipment' },
-                { name: 'Other Industrial Equipment', slug: 'industrial-other' }
+                'Workshop Equipment',
+                'Restaurant and Cafe Equipment',
+                'Bakery Equipment',
+                'Construction and Heavy Industry Equipment',
+                'Agricultural and Industrial Equipment',
+                'Production Lines',
+                'Industrial Safety Equipment',
+                'General Equipment',
+                'Spare Parts and Maintenance',
+                'Generators',
+                'Industrial Textile and Sewing Machines',
+                'Unclassified Equipment'
             ]
         },
         {
             name: 'Sports Equipment',
-            slug: 'sports-equipment',
             subcategories: [
-                { name: 'Fitness Equipment', slug: 'fitness-equipment' },
-                { name: 'Team Sports', slug: 'team-sports' },
-                { name: 'Individual Sports', slug: 'individual-sports' },
-                { name: 'Outdoor Sports', slug: 'outdoor-sports' },
-                { name: 'Water Sports', slug: 'water-sports' }
+                'Bodybuilding and Fitness Equipment',
+                'Individual Sports Equipment',
+                'Martial Arts and Martial Arts Equipment',
+                'Outdoor Sports Equipment',
+                'Sports Accessories'
             ]
         },
         {
             name: 'Musical Equipment',
-            slug: 'musical-equipment',
             subcategories: [
-                { name: 'String Instruments', slug: 'string-instruments' },
-                { name: 'Wind Instruments', slug: 'wind-instruments' },
-                { name: 'Percussion Instruments', slug: 'percussion-instruments' },
-                { name: 'Keyboards and Pianos', slug: 'keyboards-pianos' },
-                { name: 'Amplifiers and Audio', slug: 'amplifiers-audio' },
-                { name: 'Music Accessories', slug: 'music-accessories' }
+                'Stringed Instruments',
+                'Percussion Instruments',
+                'Wind Instruments',
+                'Keyboard Instruments',
+                'Recording Equipment',
+                'Accessories'
             ]
         },
         {
             name: 'Animals',
-            slug: 'animals',
             subcategories: [
-                { name: 'Dogs', slug: 'dogs' },
-                { name: 'Cats', slug: 'cats' },
-                { name: 'Birds', slug: 'birds' },
-                { name: 'Other Animals', slug: 'other-animals' }
+                'Pets',
+                'Farm Animals',
+                'Animal Supplies',
+                'Animal Services'
             ]
         },
         {
             name: 'Medical Supplies',
-            slug: 'medical-supplies',
             subcategories: [
-                { name: 'Medical Equipment', slug: 'medical-equipment' },
-                { name: 'Personal Care', slug: 'personal-care' },
-                { name: 'Mobility Aids', slug: 'mobility-aids' },
-                { name: 'First Aid', slug: 'first-aid' },
-                { name: 'Pharmacy Supplies', slug: 'pharmacy-supplies' }
+                'Medical Devices',
+                'Medical Instruments',
+                'Consumables Laboratory',
+                'Supplies Medical',
+                'Beds and Chairs'
             ]
         },
         {
             name: 'Foodstuffs',
-            slug: 'foodstuffs',
             subcategories: [
-                { name: 'Fresh Produce', slug: 'fresh-produce' },
-                { name: 'Meat and Seafood', slug: 'meat-seafood' },
-                { name: 'Dairy Products', slug: 'dairy-products' },
-                { name: 'Bakery Items', slug: 'bakery-items' },
-                { name: 'Beverages', slug: 'beverages' },
-                { name: 'Canned and Packaged Foods', slug: 'canned-packaged' },
-                { name: 'Spices and Condiments', slug: 'spices-condiments' },
-                { name: 'Organic and Specialty Foods', slug: 'organic-specialty' }
+                'Basic Ingredients',
+                'Oils and Fats',
+                'Canned Foods',
+                'Beverages',
+                'Dairy Products',
+                'Meat, Poultry, and Fish',
+                'Vegetables and Fruits',
+                'Unclassified Products'
             ]
         }
     ];
+    const categories = newCategoryData.map(c => ({
+        name: c.name,
+        slug: slugify(c.name),
+        subcategories: c.subcategories.map(s => ({ name: s, slug: slugify(s) })),
+    }));
     const createdCategories = new Map();
     const createdSubcategories = new Map();
     for (const category of categories) {

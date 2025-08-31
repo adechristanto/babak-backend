@@ -103,7 +103,8 @@ __decorate([
 ], UsersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)('profile'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, allow_unverified_decorator_1.AllowUnverified)(),
     (0, swagger_1.ApiOperation)({ summary: 'Update current user profile' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Profile updated successfully', type: user_response_dto_1.UserResponseDto }),
     (0, swagger_1.ApiBearerAuth)(),

@@ -16,7 +16,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || 3001;
   const nodeEnv = configService.get<string>('nodeEnv') || 'development';
-  const corsOrigins = configService.get<string[]>('corsOrigins') || ['http://localhost:3000', 'http://localhost:5173'];
+  const corsOrigins = configService.get<string[]>('corsOrigins') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'];
 
   // Use Pino logger
   app.useLogger(app.get(Logger));

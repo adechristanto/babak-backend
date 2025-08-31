@@ -23,7 +23,11 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "ts-node prisma/seed.ts"
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:create-test-users": "ts-node scripts/create-test-users.ts",
+    "db:create-test-users-with-data": "ts-node scripts/create-test-users-with-data.ts",
+    "db:create-test-users-simple": "ts-node scripts/create-test-users-simple.ts",
+    "db:create-test-data": "ts-node scripts/create-test-data.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

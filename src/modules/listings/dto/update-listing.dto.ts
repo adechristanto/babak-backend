@@ -53,6 +53,26 @@ export class UpdateListingDto {
   @Transform(({ value }) => parseFloat(value as string))
   longitude?: number;
 
+  @ApiProperty({ example: '123 Main St, New York, NY 10001, USA', required: false })
+  @IsString()
+  @IsOptional()
+  locationAddress?: string;
+
+  @ApiProperty({ example: 'New York', required: false })
+  @IsString()
+  @IsOptional()
+  locationCity?: string;
+
+  @ApiProperty({ example: 'United States', required: false })
+  @IsString()
+  @IsOptional()
+  locationCountry?: string;
+
+  @ApiProperty({ example: 'ChIJOwg_06VPwokRYv534QaPC8g', required: false })
+  @IsString()
+  @IsOptional()
+  locationPlaceId?: string;
+
   @ApiProperty({ enum: ListingStatus, required: false })
   @IsEnum(ListingStatus)
   @IsOptional()

@@ -23,6 +23,10 @@ class CreateListingDto {
     city;
     latitude;
     longitude;
+    locationAddress;
+    locationCity;
+    locationCountry;
+    locationPlaceId;
     condition = client_1.ListingCondition.GOOD;
     negotiable = client_1.NegotiableStatus.FIXED_PRICE;
 }
@@ -83,6 +87,30 @@ __decorate([
     (0, class_transformer_1.Transform)(({ value }) => parseFloat(value)),
     __metadata("design:type", Number)
 ], CreateListingDto.prototype, "longitude", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '123 Main St, New York, NY 10001, USA' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateListingDto.prototype, "locationAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'New York' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateListingDto.prototype, "locationCity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'United States' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateListingDto.prototype, "locationCountry", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'ChIJOwg_06VPwokRYv534QaPC8g' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateListingDto.prototype, "locationPlaceId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         enum: client_1.ListingCondition,
