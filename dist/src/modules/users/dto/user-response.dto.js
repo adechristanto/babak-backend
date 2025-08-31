@@ -18,6 +18,9 @@ class UserResponseDto {
     email;
     name;
     avatarUrl;
+    phone;
+    location;
+    bio;
     role;
     emailVerified;
     createdAt;
@@ -50,6 +53,21 @@ __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", Object)
 ], UserResponseDto.prototype, "avatarUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '+1234567890' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus, Syria' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Bio description' }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], UserResponseDto.prototype, "bio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.UserRole, example: client_1.UserRole.USER }),
     (0, class_transformer_1.Expose)(),

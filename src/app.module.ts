@@ -17,6 +17,8 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
 import { OffersModule } from './modules/offers/offers.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 
@@ -76,6 +78,8 @@ import { validate } from './config/env.validation';
     EmailModule,
     HealthModule,
     OffersModule,
+    AnalyticsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

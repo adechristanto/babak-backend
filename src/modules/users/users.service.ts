@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    const { password, ...updateData } = updateUserDto;
+    const updateData = { ...updateUserDto };
 
     // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
@@ -77,18 +78,10 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Prepare update data
-    const dataToUpdate: any = { ...updateData };
-
-    // Hash new password if provided
-    if (password) {
-      dataToUpdate.passwordHash = await argon2.hash(password);
-    }
-
     // Update user
     const user = await this.prisma.user.update({
       where: { id },
-      data: dataToUpdate,
+      data: updateData,
     });
 
     return new UserResponseDto(user);
@@ -143,6 +136,36 @@ export class UsersService {
       data: {
         emailVerificationToken: token,
         emailVerificationExpires: expires,
+      },
+    });
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void> {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    // Get user with current password
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await this.validatePassword(user, currentPassword);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Hash new password
+    const newPasswordHash = await argon2.hash(newPassword);
+
+    // Update password
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: newPasswordHash,
       },
     });
   }

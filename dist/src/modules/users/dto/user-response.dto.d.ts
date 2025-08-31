@@ -4,6 +4,9 @@ export declare class UserResponseDto {
     email: string;
     name: string | null;
     avatarUrl: string | null;
+    phone: string | null;
+    location: string | null;
+    bio: string | null;
     role: UserRole;
     emailVerified: boolean;
     createdAt: Date;

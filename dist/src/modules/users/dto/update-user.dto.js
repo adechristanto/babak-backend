@@ -15,7 +15,9 @@ const class_validator_1 = require("class-validator");
 class UpdateUserDto {
     name;
     avatarUrl;
-    password;
+    phone;
+    location;
+    bio;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
@@ -31,10 +33,21 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "avatarUrl", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'newpassword123', minLength: 8, required: false }),
+    (0, swagger_1.ApiProperty)({ example: '+1234567890', required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.MinLength)(8),
     __metadata("design:type", String)
-], UpdateUserDto.prototype, "password", void 0);
+], UpdateUserDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Damascus, Syria', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Bio description', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "bio", void 0);
 //# sourceMappingURL=update-user.dto.js.map

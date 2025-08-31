@@ -93,20 +93,16 @@ let UsersService = class UsersService {
         });
     }
     async update(id, updateUserDto) {
-        const { password, ...updateData } = updateUserDto;
+        const updateData = { ...updateUserDto };
         const existingUser = await this.prisma.user.findUnique({
             where: { id },
         });
         if (!existingUser) {
             throw new common_1.NotFoundException('User not found');
         }
-        const dataToUpdate = { ...updateData };
-        if (password) {
-            dataToUpdate.passwordHash = await argon2.hash(password);
-        }
         const user = await this.prisma.user.update({
             where: { id },
-            data: dataToUpdate,
+            data: updateData,
         });
         return new user_response_dto_1.UserResponseDto(user);
     }
@@ -150,6 +146,26 @@ let UsersService = class UsersService {
             data: {
                 emailVerificationToken: token,
                 emailVerificationExpires: expires,
+            },
+        });
+    }
+    async changePassword(userId, changePasswordDto) {
+        const { currentPassword, newPassword } = changePasswordDto;
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        const isCurrentPasswordValid = await this.validatePassword(user, currentPassword);
+        if (!isCurrentPasswordValid) {
+            throw new common_1.BadRequestException('Current password is incorrect');
+        }
+        const newPasswordHash = await argon2.hash(newPassword);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                passwordHash: newPasswordHash,
             },
         });
     }

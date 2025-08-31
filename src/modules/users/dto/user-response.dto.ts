@@ -19,6 +19,18 @@ export class UserResponseDto {
   @Expose()
   avatarUrl: string | null;
 
+  @ApiProperty({ example: '+1234567890' })
+  @Expose()
+  phone: string | null;
+
+  @ApiProperty({ example: 'Damascus, Syria' })
+  @Expose()
+  location: string | null;
+
+  @ApiProperty({ example: 'Bio description' })
+  @Expose()
+  bio: string | null;
+
   @ApiProperty({ enum: UserRole, example: UserRole.USER })
   @Expose()
   role: UserRole;
