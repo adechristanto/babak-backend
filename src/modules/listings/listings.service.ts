@@ -73,6 +73,9 @@ export class ListingsService {
       minPrice,
       maxPrice,
       city,
+      latitude,
+      longitude,
+      radiusKm,
       status,
       isVip,
       isFeatured,
@@ -116,6 +119,25 @@ export class ListingsService {
     // Location filter
     if (city) {
       where.city = { contains: city, mode: 'insensitive' };
+    }
+
+    // Geo radius filter (rough box filter for simplicity)
+    if (
+      latitude !== undefined &&
+      longitude !== undefined &&
+      radiusKm !== undefined &&
+      radiusKm > 0
+    ) {
+      // 1 degree lat ~ 111km; lon scales by cos(lat)
+      const latDelta = radiusKm / 111;
+      const lonDelta = radiusKm / (111 * Math.cos((latitude * Math.PI) / 180) || 1);
+      where.AND = where.AND || [];
+      (where.AND as any[]).push({
+        latitude: { gte: latitude - latDelta, lte: latitude + latDelta },
+      });
+      (where.AND as any[]).push({
+        longitude: { gte: longitude - lonDelta, lte: longitude + lonDelta },
+      });
     }
 
     // VIP filter
@@ -334,6 +356,19 @@ export class ListingsService {
 
   async findMyListings(sellerId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
     return this.findAll({ ...searchDto, sellerId });
+  }
+
+  async findListingsByUser(userId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
+    // First check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.findAll({ ...searchDto, sellerId: userId });
   }
 
   async update(id: number, updateListingDto: UpdateListingDto, userId: number): Promise<ListingResponseDto> {

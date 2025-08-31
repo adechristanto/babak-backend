@@ -636,6 +636,78 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
     }
   }
 
+  // Phones & Accessories (top-level and subcategories)
+  const phonesCategory = createdCategories.get('phones-and-accessories');
+  if (phonesCategory) {
+    const phoneGeneralAttrs = [
+      { name: 'Brand', key: 'brand', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 1 },
+      { name: 'Model', key: 'model', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 2 },
+      { name: 'Storage Capacity', key: 'storage', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['32GB','64GB','128GB','256GB','512GB','1TB'], displayOrder: 3 },
+      { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
+      { name: 'Warranty', key: 'warranty', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['no_warranty','3_months','6_months','12_months'], displayOrder: 5 },
+      { name: 'Accessories Included', key: 'accessories_included', type: AttributeType.MULTISELECT, dataType: AttributeDataType.JSON, required: false, searchable: true, options: ['box','charger','cable','earbuds','case','screen_protector'], displayOrder: 6 },
+    ];
+    for (const attr of phoneGeneralAttrs) {
+      await prisma.categoryAttribute.upsert({
+        where: { categoryId_key: { categoryId: phonesCategory.id, key: attr.key } },
+        update: {},
+        create: { categoryId: phonesCategory.id, ...attr },
+      });
+    }
+
+    const mobilePhones = createdSubcategories.get('mobile-phones');
+    if (mobilePhones) {
+      const mobileAttrs = [
+        { name: 'Operating System', key: 'os', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['ios','android','other'], displayOrder: 1 },
+        { name: 'Screen Size', key: 'screen_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'in', validation: { min: 4.7, max: 7.6, decimalPlaces: 1 }, displayOrder: 2 },
+        { name: 'RAM', key: 'ram', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'], displayOrder: 3 },
+        { name: 'Battery Health', key: 'battery_health', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: '%', validation: { min: 50, max: 100 }, displayOrder: 4 },
+        { name: 'Dual SIM', key: 'dual_sim', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
+      ];
+      for (const attr of mobileAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: mobilePhones.id, key: attr.key } },
+          update: {},
+          create: { categoryId: mobilePhones.id, ...attr },
+        });
+      }
+    }
+  }
+
+  // Computers & Accessories
+  const computersCategory = createdCategories.get('computers-and-accessories');
+  if (computersCategory) {
+    const computerGeneralAttrs = [
+      { name: 'Device Type', key: 'device_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['laptop','desktop','monitor','accessory'], displayOrder: 1 },
+      { name: 'Brand', key: 'brand', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 2 },
+      { name: 'Model', key: 'model', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 3 },
+    ];
+    for (const attr of computerGeneralAttrs) {
+      await prisma.categoryAttribute.upsert({
+        where: { categoryId_key: { categoryId: computersCategory.id, key: attr.key } },
+        update: {},
+        create: { categoryId: computersCategory.id, ...attr },
+      });
+    }
+
+    const laptops = createdSubcategories.get('laptops');
+    if (laptops) {
+      const laptopAttrs = [
+        { name: 'CPU', key: 'cpu', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 1 },
+        { name: 'RAM', key: 'ram', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4GB','8GB','16GB','32GB','64GB'], displayOrder: 2 },
+        { name: 'Storage', key: 'storage', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['128GB SSD','256GB SSD','512GB SSD','1TB SSD','2TB SSD','HDD'], displayOrder: 3 },
+        { name: 'GPU', key: 'gpu', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
+      ];
+      for (const attr of laptopAttrs) {
+        await prisma.categoryAttribute.upsert({
+          where: { categoryId_key: { categoryId: laptops.id, key: attr.key } },
+          update: {},
+          create: { categoryId: laptops.id, ...attr },
+        });
+      }
+    }
+  }
+
   // Vehicle subcategory-specific attributes
   if (vehiclesCategory) {
     const cars = createdSubcategories.get('cars');

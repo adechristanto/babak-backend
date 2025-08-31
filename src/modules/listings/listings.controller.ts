@@ -74,6 +74,18 @@ export class ListingsController {
     return this.listingsService.findMyListings(req.user.id, searchDto);
   }
 
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get listings by user ID (public)' })
+  @ApiResponse({ status: 200, description: 'User listings retrieved successfully', type: PaginatedListingsDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'userId', description: 'User ID' })
+  async findListingsByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query() searchDto: SearchListingsDto,
+  ): Promise<PaginatedListingsDto> {
+    return this.listingsService.findListingsByUser(userId, searchDto);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get listing by ID' })
   @ApiResponse({ status: 200, description: 'Listing retrieved successfully', type: ListingResponseDto })

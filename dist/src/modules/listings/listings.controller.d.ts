@@ -12,6 +12,7 @@ export declare class ListingsController {
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     searchAdvanced(searchDto: EnhancedSearchListingsDto): Promise<PaginatedListingsDto>;
     findMyListings(searchDto: SearchListingsDto, req: any): Promise<PaginatedListingsDto>;
+    findListingsByUser(userId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     findOne(id: number, req: any): Promise<ListingResponseDto>;
     update(id: number, updateListingDto: UpdateListingDto, req: any): Promise<ListingResponseDto>;
     remove(id: number, req: any): Promise<{

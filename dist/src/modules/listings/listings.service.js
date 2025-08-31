@@ -268,6 +268,15 @@ let ListingsService = class ListingsService {
     async findMyListings(sellerId, searchDto) {
         return this.findAll({ ...searchDto, sellerId });
     }
+    async findListingsByUser(userId, searchDto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        return this.findAll({ ...searchDto, sellerId: userId });
+    }
     async update(id, updateListingDto, userId) {
         const { categoryId, attributes, ...updateData } = updateListingDto;
         const existingListing = await this.prisma.listing.findUnique({

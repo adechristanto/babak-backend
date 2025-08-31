@@ -16,6 +16,7 @@ export declare class ListingsService {
     getViewCount(listingId: number): Promise<number>;
     getRelatedListings(listingId: number, limit?: number): Promise<ListingResponseDto[]>;
     findMyListings(sellerId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
+    findListingsByUser(userId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     update(id: number, updateListingDto: UpdateListingDto, userId: number): Promise<ListingResponseDto>;
     remove(id: number, userId: number): Promise<void>;
     publish(id: number, userId: number): Promise<ListingResponseDto>;

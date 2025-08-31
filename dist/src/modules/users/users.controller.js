@@ -40,6 +40,9 @@ let UsersController = class UsersController {
     async findOne(id) {
         return this.usersService.findOne(id);
     }
+    async findOneAdmin(id) {
+        return this.usersService.findOne(id);
+    }
     async updateProfile(req, updateUserDto) {
         return this.usersService.update(req.user.id, updateUserDto);
     }
@@ -90,8 +93,19 @@ __decorate([
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get user by ID (public)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User retrieved successfully', type: user_response_dto_1.UserResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Get)(':id/admin'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
-    (0, swagger_1.ApiOperation)({ summary: 'Get user by ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get user by ID (admin only)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User retrieved successfully', type: user_response_dto_1.UserResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
@@ -100,7 +114,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
-], UsersController.prototype, "findOne", null);
+], UsersController.prototype, "findOneAdmin", null);
 __decorate([
     (0, common_1.Patch)('profile'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

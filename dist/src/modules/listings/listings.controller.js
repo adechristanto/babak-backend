@@ -41,6 +41,9 @@ let ListingsController = class ListingsController {
     async findMyListings(searchDto, req) {
         return this.listingsService.findMyListings(req.user.id, searchDto);
     }
+    async findListingsByUser(userId, searchDto) {
+        return this.listingsService.findListingsByUser(userId, searchDto);
+    }
     async findOne(id, req) {
         const viewerId = req.user?.id;
         const ipAddress = req.ip || req.connection?.remoteAddress;
@@ -112,6 +115,18 @@ __decorate([
     __metadata("design:paramtypes", [search_listings_dto_1.SearchListingsDto, Object]),
     __metadata("design:returntype", Promise)
 ], ListingsController.prototype, "findMyListings", null);
+__decorate([
+    (0, common_1.Get)('user/:userId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get listings by user ID (public)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User listings retrieved successfully', type: paginated_listings_dto_1.PaginatedListingsDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
+    (0, swagger_1.ApiParam)({ name: 'userId', description: 'User ID' }),
+    __param(0, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, search_listings_dto_1.SearchListingsDto]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "findListingsByUser", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get listing by ID' }),

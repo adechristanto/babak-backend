@@ -58,14 +58,25 @@ export class UsersController {
     return this.usersService.findOne(req.user.id);
   }
 
+
+
   @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID (public)' })
+  @ApiResponse({ status: 200, description: 'User retrieved successfully', type: UserResponseDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
+    return this.usersService.findOne(id);
+  }
+
+  @Get(':id/admin')
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiOperation({ summary: 'Get user by ID (admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiBearerAuth()
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
+  async findOneAdmin(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
     return this.usersService.findOne(id);
   }
 

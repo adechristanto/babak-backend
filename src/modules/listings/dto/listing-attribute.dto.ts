@@ -212,6 +212,24 @@ export class EnhancedSearchListingsDto {
   @IsOptional()
   city?: string;
 
+  @ApiProperty({ example: 40.7128, required: false, description: 'Latitude for radius search' })
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  latitude?: number;
+
+  @ApiProperty({ example: -74.0060, required: false, description: 'Longitude for radius search' })
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  longitude?: number;
+
+  @ApiProperty({ example: 25, required: false, description: 'Search radius in kilometers' })
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  radiusKm?: number;
+
   @ApiProperty({ 
     type: [AttributeFilterDto],
     required: false,

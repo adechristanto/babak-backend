@@ -10,6 +10,7 @@ export declare class UsersController {
     findAll(): Promise<UserResponseDto[]>;
     getProfile(req: any): Promise<UserResponseDto>;
     findOne(id: number): Promise<UserResponseDto>;
+    findOneAdmin(id: number): Promise<UserResponseDto>;
     updateProfile(req: any, updateUserDto: UpdateUserDto): Promise<UserResponseDto>;
     changePassword(req: any, changePasswordDto: ChangePasswordDto): Promise<{
         message: string;
