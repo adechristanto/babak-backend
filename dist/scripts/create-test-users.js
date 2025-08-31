@@ -64,8 +64,8 @@ async function createTestUsers() {
             password: 'Superuser123',
             name: 'Test User 1',
             role: client_1.UserRole.USER,
-            phone: '+6281234567892',
-            location: 'Surabaya, Indonesia',
+            phone: '+963123456789',
+            location: 'Damascus, Syria',
             bio: 'Regular user account for testing marketplace features.',
             avatarUrl: 'https://picsum.photos/200/200?random=22'
         },
@@ -74,8 +74,8 @@ async function createTestUsers() {
             password: 'Superuser123',
             name: 'Test User 2',
             role: client_1.UserRole.USER,
-            phone: '+6281234567893',
-            location: 'Medan, Indonesia',
+            phone: '+963123456790',
+            location: 'Aleppo, Syria',
             bio: 'Another regular user account for testing interactions.',
             avatarUrl: 'https://picsum.photos/200/200?random=23'
         }

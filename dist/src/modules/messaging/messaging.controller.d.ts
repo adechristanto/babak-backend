@@ -13,4 +13,10 @@ export declare class MessagingController {
         message: string;
     }>;
     getMessages(id: number, page: number | undefined, limit: number | undefined, req: any): Promise<MessageResponseDto[]>;
+    deleteThread(id: number, req: any): Promise<{
+        message: string;
+    }>;
+    deleteMessage(threadId: number, messageId: number, req: any): Promise<{
+        message: string;
+    }>;
 }

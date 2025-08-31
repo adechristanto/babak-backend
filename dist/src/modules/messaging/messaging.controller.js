@@ -44,6 +44,14 @@ let MessagingController = class MessagingController {
     async getMessages(id, page = 1, limit = 50, req) {
         return this.messagingService.getMessages(id, req.user.id, page, limit);
     }
+    async deleteThread(id, req) {
+        await this.messagingService.deleteThread(id, req.user.id);
+        return { message: 'Thread deleted successfully' };
+    }
+    async deleteMessage(threadId, messageId, req) {
+        await this.messagingService.deleteMessage(threadId, messageId, req.user.id);
+        return { message: 'Message deleted successfully' };
+    }
 };
 exports.MessagingController = MessagingController;
 __decorate([
@@ -120,6 +128,32 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number, Number, Object]),
     __metadata("design:returntype", Promise)
 ], MessagingController.prototype, "getMessages", null);
+__decorate([
+    (0, common_1.Delete)('threads/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete thread' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Thread deleted successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Thread not found or access denied' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Thread ID' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], MessagingController.prototype, "deleteThread", null);
+__decorate([
+    (0, common_1.Delete)('threads/:threadId/messages/:messageId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete message from thread' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Message deleted successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Thread or message not found or access denied' }),
+    (0, swagger_1.ApiParam)({ name: 'threadId', description: 'Thread ID' }),
+    (0, swagger_1.ApiParam)({ name: 'messageId', description: 'Message ID' }),
+    __param(0, (0, common_1.Param)('threadId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Param)('messageId', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", Promise)
+], MessagingController.prototype, "deleteMessage", null);
 exports.MessagingController = MessagingController = __decorate([
     (0, swagger_1.ApiTags)('Messaging'),
     (0, common_1.Controller)('messaging'),

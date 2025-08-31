@@ -12,12 +12,13 @@ const messaging_service_1 = require("./messaging.service");
 const messaging_controller_1 = require("./messaging.controller");
 const auth_module_1 = require("../auth/auth.module");
 const users_module_1 = require("../users/users.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 let MessagingModule = class MessagingModule {
 };
 exports.MessagingModule = MessagingModule;
 exports.MessagingModule = MessagingModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, users_module_1.UsersModule],
+        imports: [auth_module_1.AuthModule, users_module_1.UsersModule, notifications_module_1.NotificationsModule],
         controllers: [messaging_controller_1.MessagingController],
         providers: [messaging_service_1.MessagingService],
         exports: [messaging_service_1.MessagingService],

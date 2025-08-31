@@ -377,6 +377,278 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
             });
         }
     }
+    const electronicsCategory = createdCategories.get('electronics');
+    if (electronicsCategory) {
+        const electronicsAttributes = [
+            {
+                name: 'Brand',
+                key: 'brand',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                placeholder: 'e.g., Samsung, LG, Sony',
+                displayOrder: 1,
+            },
+            {
+                name: 'Model',
+                key: 'model',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                placeholder: 'Model name/number',
+                displayOrder: 2,
+            },
+            {
+                name: 'Warranty',
+                key: 'warranty',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                options: ['no_warranty', '3_months', '6_months', '12_months', '24_months'],
+                displayOrder: 3,
+            },
+        ];
+        for (const attr of electronicsAttributes) {
+            await prisma.categoryAttribute.upsert({
+                where: {
+                    categoryId_key: {
+                        categoryId: electronicsCategory.id,
+                        key: attr.key,
+                    },
+                },
+                update: {},
+                create: { categoryId: electronicsCategory.id, ...attr },
+            });
+        }
+        const televisions = createdSubcategories.get('televisions');
+        if (televisions) {
+            const tvAttrs = [
+                {
+                    name: 'Screen Size',
+                    key: 'screen_size',
+                    type: client_1.AttributeType.NUMBER,
+                    dataType: client_1.AttributeDataType.INTEGER,
+                    required: false,
+                    searchable: true,
+                    unit: 'in',
+                    validation: { min: 19, max: 105 },
+                    placeholder: 'e.g., 55',
+                    displayOrder: 1,
+                },
+                {
+                    name: 'Resolution',
+                    key: 'resolution',
+                    type: client_1.AttributeType.SELECT,
+                    dataType: client_1.AttributeDataType.STRING,
+                    required: false,
+                    searchable: true,
+                    options: ['HD', 'Full HD', '4K', '8K'],
+                    displayOrder: 2,
+                },
+                {
+                    name: 'Panel Type',
+                    key: 'panel_type',
+                    type: client_1.AttributeType.SELECT,
+                    dataType: client_1.AttributeDataType.STRING,
+                    required: false,
+                    searchable: true,
+                    options: ['LED', 'QLED', 'OLED'],
+                    displayOrder: 3,
+                },
+            ];
+            for (const attr of tvAttrs) {
+                await prisma.categoryAttribute.upsert({
+                    where: {
+                        categoryId_key: { categoryId: televisions.id, key: attr.key },
+                    },
+                    update: {},
+                    create: { categoryId: televisions.id, ...attr },
+                });
+            }
+        }
+        const refrigerators = createdSubcategories.get('refrigerators-and-freezers');
+        if (refrigerators) {
+            const refAttrs = [
+                {
+                    name: 'Type',
+                    key: 'refrigerator_type',
+                    type: client_1.AttributeType.SELECT,
+                    dataType: client_1.AttributeDataType.STRING,
+                    required: false,
+                    searchable: true,
+                    options: ['top_freezer', 'bottom_freezer', 'french_door', 'side_by_side', 'chest_freezer'],
+                    displayOrder: 1,
+                },
+                {
+                    name: 'Capacity',
+                    key: 'capacity_liters',
+                    type: client_1.AttributeType.NUMBER,
+                    dataType: client_1.AttributeDataType.INTEGER,
+                    required: false,
+                    searchable: true,
+                    unit: 'L',
+                    validation: { min: 50, max: 1000 },
+                    displayOrder: 2,
+                },
+            ];
+            for (const attr of refAttrs) {
+                await prisma.categoryAttribute.upsert({
+                    where: {
+                        categoryId_key: { categoryId: refrigerators.id, key: attr.key },
+                    },
+                    update: {},
+                    create: { categoryId: refrigerators.id, ...attr },
+                });
+            }
+        }
+    }
+    const furnitureCategory = createdCategories.get('furniture');
+    if (furnitureCategory) {
+        const furnitureAttributes = [
+            {
+                name: 'Item Type',
+                key: 'item_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['bed', 'wardrobe', 'dresser', 'nightstand', 'mattress', 'sofa', 'table', 'chair', 'set', 'other'],
+                displayOrder: 1,
+            },
+            {
+                name: 'Material',
+                key: 'material',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                options: ['wood', 'metal', 'glass', 'fabric', 'leather', 'plastic', 'other'],
+                displayOrder: 2,
+            },
+            {
+                name: 'Color/Finish',
+                key: 'color',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                displayOrder: 3,
+            },
+            {
+                name: 'Length',
+                key: 'length',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: false,
+                unit: 'cm',
+                validation: { min: 1, max: 1000, decimalPlaces: 1 },
+                displayOrder: 4,
+            },
+            {
+                name: 'Width',
+                key: 'width',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: false,
+                unit: 'cm',
+                validation: { min: 1, max: 1000, decimalPlaces: 1 },
+                displayOrder: 5,
+            },
+            {
+                name: 'Height',
+                key: 'height',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: false,
+                unit: 'cm',
+                validation: { min: 1, max: 1000, decimalPlaces: 1 },
+                displayOrder: 6,
+            },
+        ];
+        for (const attr of furnitureAttributes) {
+            await prisma.categoryAttribute.upsert({
+                where: { categoryId_key: { categoryId: furnitureCategory.id, key: attr.key } },
+                update: {},
+                create: { categoryId: furnitureCategory.id, ...attr },
+            });
+        }
+    }
+    const clothingCategory = createdCategories.get('clothing');
+    if (clothingCategory) {
+        const clothingAttributes = [
+            {
+                name: 'Category',
+                key: 'fashion_category',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['men', 'women', 'kids'],
+                displayOrder: 1,
+            },
+            {
+                name: 'Item Type',
+                key: 'item_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['shirt', 'pants', 'dress', 'shoes', 'accessories', 'outerwear', 'other'],
+                displayOrder: 2,
+            },
+            {
+                name: 'Size',
+                key: 'size',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                placeholder: 'e.g., S, M, 42 EU',
+                displayOrder: 3,
+            },
+            {
+                name: 'Brand',
+                key: 'brand',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                placeholder: 'Brand name',
+                displayOrder: 4,
+            },
+            {
+                name: 'Material',
+                key: 'material',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                displayOrder: 5,
+            },
+            {
+                name: 'Color',
+                key: 'color',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                displayOrder: 6,
+            },
+        ];
+        for (const attr of clothingAttributes) {
+            await prisma.categoryAttribute.upsert({
+                where: { categoryId_key: { categoryId: clothingCategory.id, key: attr.key } },
+                update: {},
+                create: { categoryId: clothingCategory.id, ...attr },
+            });
+        }
+    }
 }
 const productData = {
     'real-estate': [

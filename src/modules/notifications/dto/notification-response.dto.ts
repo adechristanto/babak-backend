@@ -18,6 +18,10 @@ export class NotificationResponseDto {
   @Expose()
   body: string | null;
 
+  @ApiProperty({ example: '/messages/123', required: false })
+  @Expose()
+  actionUrl: string | null;
+
   @ApiProperty({ example: false })
   @Expose()
   read: boolean;

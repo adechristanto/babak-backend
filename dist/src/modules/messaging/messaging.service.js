@@ -13,14 +13,17 @@ exports.MessagingService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 const thread_response_dto_1 = require("./dto/thread-response.dto");
 const listing_response_dto_1 = require("../listings/dto/listing-response.dto");
 const user_response_dto_1 = require("../users/dto/user-response.dto");
 const category_response_dto_1 = require("../categories/dto/category-response.dto");
 let MessagingService = class MessagingService {
     prisma;
-    constructor(prisma) {
+    notificationsService;
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async createThread(createThreadDto, userId) {
         const { listingId, message } = createThreadDto;
@@ -61,7 +64,7 @@ let MessagingService = class MessagingService {
                 participants: { include: { user: true } },
                 messages: {
                     include: { sender: true },
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: { createdAt: 'asc' },
                     take: 20,
                 },
             },
@@ -92,7 +95,7 @@ let MessagingService = class MessagingService {
                         participants: { include: { user: true } },
                         messages: {
                             include: { sender: true },
-                            orderBy: { createdAt: 'desc' },
+                            orderBy: { createdAt: 'asc' },
                             take: 20,
                         },
                     },
@@ -122,7 +125,7 @@ let MessagingService = class MessagingService {
                 participants: { include: { user: true } },
                 messages: {
                     include: { sender: true },
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: { createdAt: 'asc' },
                 },
             },
         });
@@ -171,6 +174,11 @@ let MessagingService = class MessagingService {
             },
             include: {
                 participants: true,
+                listing: {
+                    include: {
+                        seller: true,
+                    },
+                },
             },
         });
         if (!thread) {
@@ -199,6 +207,15 @@ let MessagingService = class MessagingService {
                 lastReadAt: new Date(),
             },
         });
+        const otherParticipants = thread.participants.filter(p => p.userId !== userId);
+        for (const participant of otherParticipants) {
+            try {
+                await this.notificationsService.notifyNewMessage(participant.userId, message.sender.name || message.sender.email, thread.listing.title, threadId);
+            }
+            catch (error) {
+                console.error('Failed to send notification:', error);
+            }
+        }
         return new thread_response_dto_1.MessageResponseDto({
             ...message,
             sender: new user_response_dto_1.UserResponseDto(message.sender),
@@ -289,7 +306,7 @@ let MessagingService = class MessagingService {
         const messages = await this.prisma.message.findMany({
             where: { threadId },
             include: { sender: true },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: 'asc' },
             skip,
             take: limit,
         });
@@ -297,6 +314,52 @@ let MessagingService = class MessagingService {
             ...message,
             sender: new user_response_dto_1.UserResponseDto(message.sender),
         }));
+    }
+    async deleteThread(threadId, userId) {
+        const thread = await this.prisma.thread.findFirst({
+            where: {
+                id: threadId,
+                participants: {
+                    some: { userId },
+                },
+            },
+        });
+        if (!thread) {
+            throw new common_1.NotFoundException('Thread not found or access denied');
+        }
+        await this.prisma.message.deleteMany({
+            where: { threadId },
+        });
+        await this.prisma.threadParticipant.deleteMany({
+            where: { threadId },
+        });
+        await this.prisma.thread.delete({
+            where: { id: threadId },
+        });
+    }
+    async deleteMessage(threadId, messageId, userId) {
+        const message = await this.prisma.message.findFirst({
+            where: {
+                id: messageId,
+                threadId,
+                senderId: userId,
+            },
+            include: {
+                thread: {
+                    include: {
+                        participants: {
+                            where: { userId },
+                        },
+                    },
+                },
+            },
+        });
+        if (!message || message.thread.participants.length === 0) {
+            throw new common_1.NotFoundException('Message not found or access denied');
+        }
+        await this.prisma.message.delete({
+            where: { id: messageId },
+        });
     }
     mapToThreadResponseDto(thread, currentUserId) {
         const participant = thread.participants.find((p) => p.userId === currentUserId);
@@ -323,6 +386,7 @@ let MessagingService = class MessagingService {
 exports.MessagingService = MessagingService;
 exports.MessagingService = MessagingService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], MessagingService);
 //# sourceMappingURL=messaging.service.js.map

@@ -345,6 +345,7 @@ model Notification {
   type      String
   title     String
   body      String?
+  actionUrl String?  @map("action_url")
   read      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 

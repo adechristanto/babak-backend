@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -102,5 +103,33 @@ export class MessagingController {
     @Request() req: any,
   ): Promise<MessageResponseDto[]> {
     return this.messagingService.getMessages(id, req.user.id, page, limit);
+  }
+
+  @Delete('threads/:id')
+  @ApiOperation({ summary: 'Delete thread' })
+  @ApiResponse({ status: 200, description: 'Thread deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Thread not found or access denied' })
+  @ApiParam({ name: 'id', description: 'Thread ID' })
+  async deleteThread(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+  ): Promise<{ message: string }> {
+    await this.messagingService.deleteThread(id, req.user.id);
+    return { message: 'Thread deleted successfully' };
+  }
+
+  @Delete('threads/:threadId/messages/:messageId')
+  @ApiOperation({ summary: 'Delete message from thread' })
+  @ApiResponse({ status: 200, description: 'Message deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Thread or message not found or access denied' })
+  @ApiParam({ name: 'threadId', description: 'Thread ID' })
+  @ApiParam({ name: 'messageId', description: 'Message ID' })
+  async deleteMessage(
+    @Param('threadId', ParseIntPipe) threadId: number,
+    @Param('messageId', ParseIntPipe) messageId: number,
+    @Request() req: any,
+  ): Promise<{ message: string }> {
+    await this.messagingService.deleteMessage(threadId, messageId, req.user.id);
+    return { message: 'Message deleted successfully' };
   }
 }

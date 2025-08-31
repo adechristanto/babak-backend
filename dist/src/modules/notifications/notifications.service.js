@@ -18,13 +18,14 @@ let NotificationsService = class NotificationsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createNotification(userId, type, title, body) {
+    async createNotification(userId, type, title, body, actionUrl) {
         const notification = await this.prisma.notification.create({
             data: {
                 userId,
                 type,
                 title,
                 body,
+                actionUrl,
             },
         });
         return new notification_response_dto_1.NotificationResponseDto(notification);
@@ -87,17 +88,26 @@ let NotificationsService = class NotificationsService {
             where: { id: notificationId },
         });
     }
-    async notifyNewMessage(recipientId, senderName, listingTitle) {
-        await this.createNotification(recipientId, 'NEW_MESSAGE', 'New Message', `${senderName} sent you a message about "${listingTitle}"`);
+    async notifyNewMessage(recipientId, senderName, listingTitle, threadId) {
+        await this.createNotification(recipientId, 'NEW_MESSAGE', 'New Message', `${senderName} sent you a message about "${listingTitle}"`, `/messages/${threadId}`);
     }
-    async notifyListingExpiring(userId, listingTitle, daysLeft) {
-        await this.createNotification(userId, 'LISTING_EXPIRING', 'Listing Expiring Soon', `Your listing "${listingTitle}" will expire in ${daysLeft} day(s)`);
+    async notifyListingExpiring(userId, listingTitle, daysLeft, listingId) {
+        await this.createNotification(userId, 'LISTING_EXPIRING', 'Listing Expiring Soon', `Your listing "${listingTitle}" will expire in ${daysLeft} day(s)`, `/my-ads/${listingId}`);
     }
-    async notifyListingExpired(userId, listingTitle) {
-        await this.createNotification(userId, 'LISTING_EXPIRED', 'Listing Expired', `Your listing "${listingTitle}" has expired`);
+    async notifyListingExpired(userId, listingTitle, listingId) {
+        await this.createNotification(userId, 'LISTING_EXPIRED', 'Listing Expired', `Your listing "${listingTitle}" has expired`, `/my-ads/${listingId}`);
     }
-    async notifyFavoriteListingUpdated(userId, listingTitle) {
-        await this.createNotification(userId, 'FAVORITE_UPDATED', 'Favorite Listing Updated', `A listing you favorited "${listingTitle}" has been updated`);
+    async notifyFavoriteListingUpdated(userId, listingTitle, listingId) {
+        await this.createNotification(userId, 'FAVORITE_UPDATED', 'Favorite Listing Updated', `A listing you favorited "${listingTitle}" has been updated`, `/listings/${listingId}`);
+    }
+    async notifyAccountVerified(userId) {
+        await this.createNotification(userId, 'ACCOUNT_VERIFIED', 'Account Verification Complete', 'Congratulations! Your seller account has been verified. You now have a verified badge.', '/profile');
+    }
+    async notifyListingAttention(userId, listingTitle, viewCount, listingId) {
+        await this.createNotification(userId, 'LISTING_ATTENTION', 'Your listing is getting attention!', `Your "${listingTitle}" listing has received ${viewCount}+ views in the last 24 hours`, `/my-ads/${listingId}`);
+    }
+    async notifyVipListingActivated(userId, listingTitle, listingId) {
+        await this.createNotification(userId, 'VIP_ACTIVATED', 'VIP listing activated', `Your "${listingTitle}" listing is now featured with VIP status for 30 days`, `/my-ads/${listingId}`);
     }
 };
 exports.NotificationsService = NotificationsService;

@@ -11,6 +11,7 @@ export class NotificationsService {
     type: string,
     title: string,
     body: string,
+    actionUrl?: string,
   ): Promise<NotificationResponseDto> {
     const notification = await this.prisma.notification.create({
       data: {
@@ -18,6 +19,7 @@ export class NotificationsService {
         type,
         title,
         body,
+        actionUrl,
       },
     });
 
@@ -96,39 +98,73 @@ export class NotificationsService {
   }
 
   // Helper methods for creating specific notification types
-  async notifyNewMessage(recipientId: number, senderName: string, listingTitle: string): Promise<void> {
+  async notifyNewMessage(recipientId: number, senderName: string, listingTitle: string, threadId: number): Promise<void> {
     await this.createNotification(
       recipientId,
       'NEW_MESSAGE',
       'New Message',
       `${senderName} sent you a message about "${listingTitle}"`,
+      `/messages/${threadId}`,
     );
   }
 
-  async notifyListingExpiring(userId: number, listingTitle: string, daysLeft: number): Promise<void> {
+  async notifyListingExpiring(userId: number, listingTitle: string, daysLeft: number, listingId: number): Promise<void> {
     await this.createNotification(
       userId,
       'LISTING_EXPIRING',
       'Listing Expiring Soon',
       `Your listing "${listingTitle}" will expire in ${daysLeft} day(s)`,
+      `/my-ads/${listingId}`,
     );
   }
 
-  async notifyListingExpired(userId: number, listingTitle: string): Promise<void> {
+  async notifyListingExpired(userId: number, listingTitle: string, listingId: number): Promise<void> {
     await this.createNotification(
       userId,
       'LISTING_EXPIRED',
       'Listing Expired',
       `Your listing "${listingTitle}" has expired`,
+      `/my-ads/${listingId}`,
     );
   }
 
-  async notifyFavoriteListingUpdated(userId: number, listingTitle: string): Promise<void> {
+  async notifyFavoriteListingUpdated(userId: number, listingTitle: string, listingId: number): Promise<void> {
     await this.createNotification(
       userId,
       'FAVORITE_UPDATED',
       'Favorite Listing Updated',
       `A listing you favorited "${listingTitle}" has been updated`,
+      `/listings/${listingId}`,
+    );
+  }
+
+  async notifyAccountVerified(userId: number): Promise<void> {
+    await this.createNotification(
+      userId,
+      'ACCOUNT_VERIFIED',
+      'Account Verification Complete',
+      'Congratulations! Your seller account has been verified. You now have a verified badge.',
+      '/profile',
+    );
+  }
+
+  async notifyListingAttention(userId: number, listingTitle: string, viewCount: number, listingId: number): Promise<void> {
+    await this.createNotification(
+      userId,
+      'LISTING_ATTENTION',
+      'Your listing is getting attention!',
+      `Your "${listingTitle}" listing has received ${viewCount}+ views in the last 24 hours`,
+      `/my-ads/${listingId}`,
+    );
+  }
+
+  async notifyVipListingActivated(userId: number, listingTitle: string, listingId: number): Promise<void> {
+    await this.createNotification(
+      userId,
+      'VIP_ACTIVATED',
+      'VIP listing activated',
+      `Your "${listingTitle}" listing is now featured with VIP status for 30 days`,
+      `/my-ads/${listingId}`,
     );
   }
 }

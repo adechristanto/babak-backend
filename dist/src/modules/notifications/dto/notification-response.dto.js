@@ -17,6 +17,7 @@ class NotificationResponseDto {
     type;
     title;
     body;
+    actionUrl;
     read;
     createdAt;
     constructor(partial) {
@@ -44,6 +45,11 @@ __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", Object)
 ], NotificationResponseDto.prototype, "body", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '/messages/123', required: false }),
+    (0, class_transformer_1.Expose)(),
+    __metadata("design:type", Object)
+], NotificationResponseDto.prototype, "actionUrl", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: false }),
     (0, class_transformer_1.Expose)(),
