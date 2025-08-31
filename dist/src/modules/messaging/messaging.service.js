@@ -23,7 +23,7 @@ let MessagingService = class MessagingService {
         this.prisma = prisma;
     }
     async createThread(createThreadDto, userId) {
-        const { listingId } = createThreadDto;
+        const { listingId, message } = createThreadDto;
         const listing = await this.prisma.listing.findUnique({
             where: { id: listingId },
             include: {
@@ -67,6 +67,38 @@ let MessagingService = class MessagingService {
             },
         });
         if (existingThread) {
+            if (message) {
+                await this.prisma.message.create({
+                    data: {
+                        threadId: existingThread.id,
+                        senderId: userId,
+                        content: message,
+                    },
+                });
+                await this.prisma.thread.update({
+                    where: { id: existingThread.id },
+                    data: { lastMessageAt: new Date() },
+                });
+                const updatedThread = await this.prisma.thread.findUnique({
+                    where: { id: existingThread.id },
+                    include: {
+                        listing: {
+                            include: {
+                                seller: true,
+                                category: true,
+                                images: { orderBy: { position: 'asc' } },
+                            },
+                        },
+                        participants: { include: { user: true } },
+                        messages: {
+                            include: { sender: true },
+                            orderBy: { createdAt: 'desc' },
+                            take: 20,
+                        },
+                    },
+                });
+                return this.mapToThreadResponseDto(updatedThread, userId);
+            }
             return this.mapToThreadResponseDto(existingThread, userId);
         }
         const thread = await this.prisma.thread.create({
@@ -94,6 +126,38 @@ let MessagingService = class MessagingService {
                 },
             },
         });
+        if (message) {
+            await this.prisma.message.create({
+                data: {
+                    threadId: thread.id,
+                    senderId: userId,
+                    content: message,
+                },
+            });
+            await this.prisma.thread.update({
+                where: { id: thread.id },
+                data: { lastMessageAt: new Date() },
+            });
+            const updatedThread = await this.prisma.thread.findUnique({
+                where: { id: thread.id },
+                include: {
+                    listing: {
+                        include: {
+                            seller: true,
+                            category: true,
+                            images: { orderBy: { position: 'asc' } },
+                        },
+                    },
+                    participants: { include: { user: true } },
+                    messages: {
+                        include: { sender: true },
+                        orderBy: { createdAt: 'desc' },
+                        take: 20,
+                    },
+                },
+            });
+            return this.mapToThreadResponseDto(updatedThread, userId);
+        }
         return this.mapToThreadResponseDto(thread, userId);
     }
     async sendMessage(threadId, sendMessageDto, userId) {

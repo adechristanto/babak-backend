@@ -18,13 +18,16 @@ const listing_response_dto_1 = require("./dto/listing-response.dto");
 const paginated_listings_dto_1 = require("./dto/paginated-listings.dto");
 const user_response_dto_1 = require("../users/dto/user-response.dto");
 const category_response_dto_1 = require("../categories/dto/category-response.dto");
+const listing_attributes_service_1 = require("./listing-attributes.service");
 let ListingsService = class ListingsService {
     prisma;
-    constructor(prisma) {
+    listingAttributesService;
+    constructor(prisma, listingAttributesService) {
         this.prisma = prisma;
+        this.listingAttributesService = listingAttributesService;
     }
     async create(createListingDto, sellerId) {
-        const { categoryId, ...listingData } = createListingDto;
+        const { categoryId, attributes, ...listingData } = createListingDto;
         if (categoryId) {
             const category = await this.prisma.category.findUnique({
                 where: { id: categoryId },
@@ -35,26 +38,32 @@ let ListingsService = class ListingsService {
         }
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30);
-        const listing = await this.prisma.listing.create({
-            data: {
-                ...listingData,
-                sellerId,
-                categoryId,
-                status: client_1.ListingStatus.DRAFT,
-                expiresAt,
-            },
-            include: {
-                seller: true,
-                category: true,
-                images: {
-                    orderBy: { position: 'asc' },
+        const result = await this.prisma.$transaction(async (tx) => {
+            const listing = await tx.listing.create({
+                data: {
+                    ...listingData,
+                    sellerId,
+                    categoryId,
+                    status: client_1.ListingStatus.DRAFT,
+                    expiresAt,
                 },
-            },
+                include: {
+                    seller: true,
+                    category: true,
+                    images: {
+                        orderBy: { position: 'asc' },
+                    },
+                },
+            });
+            if (attributes && attributes.length > 0) {
+                await this.listingAttributesService.bulkUpsert(listing.id, { attributes });
+            }
+            return listing;
         });
-        return this.mapToResponseDto(listing);
+        return await this.mapToResponseDto(result);
     }
     async findAll(searchDto) {
-        const { q, categoryId, minPrice, maxPrice, city, status, isVip, isFeatured, sellerId, sortBy, sortOrder, page, limit, } = searchDto;
+        const { q, categoryId, minPrice, maxPrice, city, status, isVip, isFeatured, sellerId, sortBy, sortOrder, page, limit, attributeFilters, } = searchDto;
         const where = {
             status: status || client_1.ListingStatus.ACTIVE,
         };
@@ -88,6 +97,38 @@ let ListingsService = class ListingsService {
         if (sellerId) {
             where.sellerId = sellerId;
         }
+        if (attributeFilters && attributeFilters.length > 0) {
+            where.attributes = {
+                some: {
+                    OR: attributeFilters.map(filter => {
+                        const attributeWhere = {
+                            attribute: { key: filter.key }
+                        };
+                        if (filter.value !== undefined) {
+                            attributeWhere.value = { contains: filter.value, mode: 'insensitive' };
+                        }
+                        else if (filter.minValue !== undefined || filter.maxValue !== undefined) {
+                            attributeWhere.numericValue = {};
+                            if (filter.minValue !== undefined) {
+                                attributeWhere.numericValue.gte = filter.minValue;
+                            }
+                            if (filter.maxValue !== undefined) {
+                                attributeWhere.numericValue.lte = filter.maxValue;
+                            }
+                        }
+                        else if (filter.booleanValue !== undefined) {
+                            attributeWhere.booleanValue = filter.booleanValue;
+                        }
+                        else if (filter.values && filter.values.length > 0) {
+                            attributeWhere.OR = filter.values.map(value => ({
+                                jsonValue: { path: '$', array_contains: value }
+                            }));
+                        }
+                        return attributeWhere;
+                    })
+                }
+            };
+        }
         const orderBy = {};
         switch (sortBy) {
             case search_listings_dto_1.SortBy.PRICE:
@@ -118,11 +159,21 @@ let ListingsService = class ListingsService {
                     images: {
                         orderBy: { position: 'asc' },
                     },
+                    attributes: {
+                        include: {
+                            attribute: true,
+                        },
+                        orderBy: {
+                            attribute: {
+                                displayOrder: 'asc',
+                            },
+                        },
+                    },
                 },
             }),
             this.prisma.listing.count({ where }),
         ]);
-        const listingDtos = listings.map(listing => this.mapToResponseDto(listing));
+        const listingDtos = await Promise.all(listings.map(listing => this.mapToResponseDto(listing)));
         const meta = new paginated_listings_dto_1.PaginationMetaDto(page || 1, limit || 20, total);
         return new paginated_listings_dto_1.PaginatedListingsDto(listingDtos, meta);
     }
@@ -143,7 +194,7 @@ let ListingsService = class ListingsService {
         this.trackView(id, viewerId, ipAddress, userAgent).catch(err => {
             console.error('Failed to track view:', err);
         });
-        return this.mapToResponseDto(listing);
+        return await this.mapToResponseDto(listing);
     }
     async trackView(listingId, viewerId, ipAddress, userAgent) {
         try {
@@ -212,13 +263,13 @@ let ListingsService = class ListingsService {
                 },
             },
         });
-        return relatedListings.map(listing => this.mapToResponseDto(listing));
+        return await Promise.all(relatedListings.map(listing => this.mapToResponseDto(listing)));
     }
     async findMyListings(sellerId, searchDto) {
         return this.findAll({ ...searchDto, sellerId });
     }
     async update(id, updateListingDto, userId) {
-        const { categoryId, ...updateData } = updateListingDto;
+        const { categoryId, attributes, ...updateData } = updateListingDto;
         const existingListing = await this.prisma.listing.findUnique({
             where: { id },
             include: { seller: true },
@@ -237,21 +288,27 @@ let ListingsService = class ListingsService {
                 throw new common_1.NotFoundException('Category not found');
             }
         }
-        const listing = await this.prisma.listing.update({
-            where: { id },
-            data: {
-                ...updateData,
-                categoryId,
-            },
-            include: {
-                seller: true,
-                category: true,
-                images: {
-                    orderBy: { position: 'asc' },
+        const result = await this.prisma.$transaction(async (tx) => {
+            const listing = await tx.listing.update({
+                where: { id },
+                data: {
+                    ...updateData,
+                    categoryId,
                 },
-            },
+                include: {
+                    seller: true,
+                    category: true,
+                    images: {
+                        orderBy: { position: 'asc' },
+                    },
+                },
+            });
+            if (attributes && attributes.length > 0) {
+                await this.listingAttributesService.bulkUpsert(listing.id, { attributes });
+            }
+            return listing;
         });
-        return this.mapToResponseDto(listing);
+        return await this.mapToResponseDto(result);
     }
     async remove(id, userId) {
         const listing = await this.prisma.listing.findUnique({
@@ -291,7 +348,7 @@ let ListingsService = class ListingsService {
                 },
             },
         });
-        return this.mapToResponseDto(updatedListing);
+        return await this.mapToResponseDto(updatedListing);
     }
     async extendExpiration(id, userId, days = 30) {
         const listing = await this.prisma.listing.findUnique({
@@ -316,19 +373,48 @@ let ListingsService = class ListingsService {
                 },
             },
         });
-        return this.mapToResponseDto(updatedListing);
+        return await this.mapToResponseDto(updatedListing);
     }
-    mapToResponseDto(listing) {
+    async mapToResponseDto(listing) {
+        let attributes = [];
+        if (listing.attributes) {
+            attributes = listing.attributes.map((attr) => ({
+                id: attr.id,
+                listingId: attr.listingId,
+                attributeId: attr.attributeId,
+                value: attr.value,
+                numericValue: attr.numericValue ? parseFloat(attr.numericValue) : null,
+                booleanValue: attr.booleanValue,
+                dateValue: attr.dateValue,
+                jsonValue: attr.jsonValue,
+                createdAt: attr.createdAt,
+                updatedAt: attr.updatedAt,
+                attribute: attr.attribute ? {
+                    id: attr.attribute.id,
+                    name: attr.attribute.name,
+                    key: attr.attribute.key,
+                    type: attr.attribute.type,
+                    dataType: attr.attribute.dataType,
+                    unit: attr.attribute.unit,
+                    options: attr.attribute.options,
+                } : undefined,
+            }));
+        }
+        else {
+            attributes = await this.listingAttributesService.findByListing(listing.id);
+        }
         return new listing_response_dto_1.ListingResponseDto({
             ...listing,
             seller: new user_response_dto_1.UserResponseDto(listing.seller),
             category: listing.category ? new category_response_dto_1.CategoryResponseDto(listing.category) : null,
+            attributes,
         });
     }
 };
 exports.ListingsService = ListingsService;
 exports.ListingsService = ListingsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        listing_attributes_service_1.ListingAttributesService])
 ], ListingsService);
 //# sourceMappingURL=listings.service.js.map

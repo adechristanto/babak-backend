@@ -4,9 +4,11 @@ import { UpdateListingDto } from './dto/update-listing.dto';
 import { SearchListingsDto } from './dto/search-listings.dto';
 import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
+import { ListingAttributesService } from './listing-attributes.service';
 export declare class ListingsService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly listingAttributesService;
+    constructor(prisma: PrismaService, listingAttributesService: ListingAttributesService);
     create(createListingDto: CreateListingDto, sellerId: number): Promise<ListingResponseDto>;
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     findOne(id: number, viewerId?: number, ipAddress?: string, userAgent?: string): Promise<ListingResponseDto>;

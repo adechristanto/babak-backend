@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
+const listing_attribute_dto_1 = require("./listing-attribute.dto");
 class UpdateListingDto {
     title;
     description;
@@ -30,6 +31,7 @@ class UpdateListingDto {
     status;
     condition;
     negotiable;
+    attributes;
 }
 exports.UpdateListingDto = UpdateListingDto;
 __decorate([
@@ -141,4 +143,16 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateListingDto.prototype, "negotiable", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: [listing_attribute_dto_1.CreateListingAttributeDto],
+        description: 'Category-specific attributes for the listing',
+        required: false
+    }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => listing_attribute_dto_1.CreateListingAttributeDto),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], UpdateListingDto.prototype, "attributes", void 0);
 //# sourceMappingURL=update-listing.dto.js.map

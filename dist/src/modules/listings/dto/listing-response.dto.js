@@ -15,6 +15,7 @@ const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
 const user_response_dto_1 = require("../../users/dto/user-response.dto");
 const category_response_dto_1 = require("../../categories/dto/category-response.dto");
+const listing_attribute_dto_1 = require("./listing-attribute.dto");
 class ListingImageResponseDto {
     id;
     url;
@@ -67,6 +68,7 @@ class ListingResponseDto {
     seller;
     category;
     images;
+    attributes;
     constructor(partial) {
         Object.assign(this, partial);
         if (partial.price !== null && partial.price !== undefined) {
@@ -195,4 +197,10 @@ __decorate([
     (0, class_transformer_1.Type)(() => ListingImageResponseDto),
     __metadata("design:type", Array)
 ], ListingResponseDto.prototype, "images", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [listing_attribute_dto_1.ListingAttributeResponseDto], required: false }),
+    (0, class_transformer_1.Expose)(),
+    (0, class_transformer_1.Type)(() => listing_attribute_dto_1.ListingAttributeResponseDto),
+    __metadata("design:type", Array)
+], ListingResponseDto.prototype, "attributes", void 0);
 //# sourceMappingURL=listing-response.dto.js.map

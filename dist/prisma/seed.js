@@ -46,6 +46,338 @@ function slugify(text) {
         .replace(/^-+/, '')
         .replace(/-+$/, '');
 }
+async function createCategoryAttributes(createdCategories, createdSubcategories) {
+    const realEstateCategory = createdCategories.get('real-estate');
+    if (realEstateCategory) {
+        const realEstateAttributes = [
+            {
+                name: 'Property Type',
+                key: 'property_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['apartment', 'house', 'land', 'shop', 'office', 'factory', 'workshop', 'tourist'],
+                displayOrder: 1
+            },
+            {
+                name: 'Listing Purpose',
+                key: 'listing_purpose',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['sale', 'rent'],
+                displayOrder: 2
+            },
+            {
+                name: 'Built Area',
+                key: 'built_area',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: true,
+                sortable: true,
+                unit: 'm²',
+                validation: { min: 1, max: 10000 },
+                placeholder: 'Enter built area',
+                displayOrder: 3
+            },
+            {
+                name: 'Lot Size',
+                key: 'lot_size',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: true,
+                sortable: true,
+                unit: 'm²',
+                validation: { min: 1, max: 100000 },
+                placeholder: 'Enter lot size',
+                displayOrder: 4
+            },
+            {
+                name: 'Bedrooms',
+                key: 'bedrooms',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                sortable: true,
+                validation: { min: 0, max: 20 },
+                placeholder: 'Number of bedrooms',
+                displayOrder: 5
+            },
+            {
+                name: 'Bathrooms',
+                key: 'bathrooms',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                sortable: true,
+                validation: { min: 0, max: 20 },
+                placeholder: 'Number of bathrooms',
+                displayOrder: 6
+            },
+            {
+                name: 'Parking Spots',
+                key: 'parking_spots',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                validation: { min: 0, max: 50 },
+                placeholder: 'Number of parking spots',
+                displayOrder: 7
+            },
+            {
+                name: 'Furnishing',
+                key: 'furnishing',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                options: ['unfurnished', 'semifurnished', 'furnished'],
+                displayOrder: 8
+            },
+            {
+                name: 'Floor Number',
+                key: 'floor_number',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                validation: { min: 0, max: 200 },
+                placeholder: 'Floor number',
+                displayOrder: 9
+            },
+            {
+                name: 'Total Floors',
+                key: 'total_floors',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                validation: { min: 1, max: 200 },
+                placeholder: 'Total floors in building',
+                displayOrder: 10
+            },
+            {
+                name: 'Year Built',
+                key: 'year_built',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                sortable: true,
+                validation: { min: 1800, max: new Date().getFullYear() + 5 },
+                placeholder: 'Year built',
+                displayOrder: 11
+            },
+            {
+                name: 'Heating Type',
+                key: 'heating_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: false,
+                searchable: true,
+                options: ['gas', 'electric', 'central', 'none'],
+                displayOrder: 12
+            },
+            {
+                name: 'Air Conditioning',
+                key: 'air_conditioning',
+                type: client_1.AttributeType.BOOLEAN,
+                dataType: client_1.AttributeDataType.BOOLEAN,
+                required: false,
+                searchable: true,
+                displayOrder: 13
+            },
+            {
+                name: 'Elevator',
+                key: 'elevator',
+                type: client_1.AttributeType.BOOLEAN,
+                dataType: client_1.AttributeDataType.BOOLEAN,
+                required: false,
+                searchable: true,
+                displayOrder: 14
+            },
+            {
+                name: 'Balcony/Terrace',
+                key: 'balcony_terrace',
+                type: client_1.AttributeType.BOOLEAN,
+                dataType: client_1.AttributeDataType.BOOLEAN,
+                required: false,
+                searchable: true,
+                displayOrder: 15
+            },
+            {
+                name: 'Garden/Patio',
+                key: 'garden_patio',
+                type: client_1.AttributeType.BOOLEAN,
+                dataType: client_1.AttributeDataType.BOOLEAN,
+                required: false,
+                searchable: true,
+                displayOrder: 16
+            },
+            {
+                name: 'Pet Allowed',
+                key: 'pet_allowed',
+                type: client_1.AttributeType.BOOLEAN,
+                dataType: client_1.AttributeDataType.BOOLEAN,
+                required: false,
+                searchable: true,
+                displayOrder: 17
+            }
+        ];
+        for (const attr of realEstateAttributes) {
+            await prisma.categoryAttribute.upsert({
+                where: {
+                    categoryId_key: {
+                        categoryId: realEstateCategory.id,
+                        key: attr.key
+                    }
+                },
+                update: {},
+                create: {
+                    categoryId: realEstateCategory.id,
+                    ...attr
+                }
+            });
+        }
+    }
+    const vehiclesCategory = createdCategories.get('vehicles');
+    if (vehiclesCategory) {
+        const vehicleAttributes = [
+            {
+                name: 'Vehicle Type',
+                key: 'vehicle_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['car', 'motorcycle', 'truck', 'commercial', 'agricultural', 'industrial', 'marine'],
+                displayOrder: 1
+            },
+            {
+                name: 'Make',
+                key: 'make',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                placeholder: 'Vehicle make (e.g., Toyota, Honda)',
+                displayOrder: 2
+            },
+            {
+                name: 'Model',
+                key: 'model',
+                type: client_1.AttributeType.TEXT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                placeholder: 'Vehicle model',
+                displayOrder: 3
+            },
+            {
+                name: 'Year',
+                key: 'year',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: true,
+                searchable: true,
+                sortable: true,
+                validation: { min: 1900, max: new Date().getFullYear() + 2 },
+                placeholder: 'Manufacturing year',
+                displayOrder: 4
+            },
+            {
+                name: 'Mileage',
+                key: 'mileage',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: true,
+                searchable: true,
+                sortable: true,
+                unit: 'km',
+                validation: { min: 0, max: 1000000 },
+                placeholder: 'Vehicle mileage',
+                displayOrder: 5
+            },
+            {
+                name: 'Fuel Type',
+                key: 'fuel_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['petrol', 'diesel', 'hybrid', 'electric', 'lpg', 'cng'],
+                displayOrder: 6
+            },
+            {
+                name: 'Transmission',
+                key: 'transmission',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['manual', 'automatic', 'cvt', 'dct'],
+                displayOrder: 7
+            },
+            {
+                name: 'Body Type',
+                key: 'body_type',
+                type: client_1.AttributeType.SELECT,
+                dataType: client_1.AttributeDataType.STRING,
+                required: true,
+                searchable: true,
+                options: ['sedan', 'suv', 'hatchback', 'coupe', 'van', 'pickup', 'convertible', 'wagon'],
+                displayOrder: 8
+            },
+            {
+                name: 'Engine Power',
+                key: 'engine_power',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.INTEGER,
+                required: false,
+                searchable: true,
+                sortable: true,
+                unit: 'HP',
+                validation: { min: 1, max: 2000 },
+                placeholder: 'Engine power in HP',
+                displayOrder: 9
+            },
+            {
+                name: 'Engine Displacement',
+                key: 'engine_displacement',
+                type: client_1.AttributeType.NUMBER,
+                dataType: client_1.AttributeDataType.DECIMAL,
+                required: false,
+                searchable: true,
+                unit: 'L',
+                validation: { min: 0.1, max: 20 },
+                placeholder: 'Engine displacement in liters',
+                displayOrder: 10
+            }
+        ];
+        for (const attr of vehicleAttributes) {
+            await prisma.categoryAttribute.upsert({
+                where: {
+                    categoryId_key: {
+                        categoryId: vehiclesCategory.id,
+                        key: attr.key
+                    }
+                },
+                update: {},
+                create: {
+                    categoryId: vehiclesCategory.id,
+                    ...attr
+                }
+            });
+        }
+    }
+}
 const productData = {
     'real-estate': [
         { title: 'Modern 2BR Apartment in City Center', price: 250000, description: 'Beautiful modern apartment with city views' },
@@ -507,6 +839,9 @@ async function main() {
         }
     }
     console.log('✅ Categories and subcategories created successfully');
+    console.log('🏷️ Creating category attributes...');
+    await createCategoryAttributes(createdCategories, createdSubcategories);
+    console.log('✅ Category attributes created successfully');
     const users = [user10, user11];
     let totalProducts = 0;
     for (const user of users) {

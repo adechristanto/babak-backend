@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsInt, Min, Max, IsEnum } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsOptional, IsString, IsNumber, IsInt, Min, Max, IsEnum, IsArray, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { ListingStatus, ListingCondition, NegotiableStatus } from '@prisma/client';
+import { CreateListingAttributeDto } from './listing-attribute.dto';
 
 export class UpdateListingDto {
   @ApiProperty({ example: 'iPhone 14 Pro Max', required: false })
@@ -88,8 +89,8 @@ export class UpdateListingDto {
   @IsOptional()
   condition?: ListingCondition;
 
-  @ApiProperty({ 
-    enum: NegotiableStatus, 
+  @ApiProperty({
+    enum: NegotiableStatus,
     example: NegotiableStatus.FIXED_PRICE,
     description: 'Price negotiation status',
     required: false
@@ -97,4 +98,15 @@ export class UpdateListingDto {
   @IsEnum(NegotiableStatus)
   @IsOptional()
   negotiable?: NegotiableStatus;
+
+  @ApiProperty({
+    type: [CreateListingAttributeDto],
+    description: 'Category-specific attributes for the listing',
+    required: false
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateListingAttributeDto)
+  @IsOptional()
+  attributes?: CreateListingAttributeDto[];
 }

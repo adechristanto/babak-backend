@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsInt, Min, Max, IsEnum, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsInt, Min, Max, IsEnum, IsBoolean, IsArray, ValidateNested } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ListingStatus } from '@prisma/client';
+import { AttributeFilterDto } from './listing-attribute.dto';
 
 export enum SortBy {
   CREATED_AT = 'createdAt',
@@ -95,4 +96,15 @@ export class SearchListingsDto {
   @IsOptional()
   @Type(() => Number)
   sellerId?: number;
+
+  @ApiProperty({
+    type: [AttributeFilterDto],
+    required: false,
+    description: 'Category-specific attribute filters'
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AttributeFilterDto)
+  @IsOptional()
+  attributeFilters?: AttributeFilterDto[];
 }

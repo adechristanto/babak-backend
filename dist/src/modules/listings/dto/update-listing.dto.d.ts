@@ -1,4 +1,5 @@
 import { ListingStatus, ListingCondition, NegotiableStatus } from '@prisma/client';
+import { CreateListingAttributeDto } from './listing-attribute.dto';
 export declare class UpdateListingDto {
     title?: string;
     description?: string;
@@ -15,4 +16,5 @@ export declare class UpdateListingDto {
     status?: ListingStatus;
     condition?: ListingCondition;
     negotiable?: NegotiableStatus;
+    attributes?: CreateListingAttributeDto[];
 }

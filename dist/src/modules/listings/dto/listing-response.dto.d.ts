@@ -1,6 +1,7 @@
 import { ListingStatus } from '@prisma/client';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { CategoryResponseDto } from '../../categories/dto/category-response.dto';
+import { ListingAttributeResponseDto } from './listing-attribute.dto';
 export declare class ListingImageResponseDto {
     id: number;
     url: string;
@@ -30,5 +31,6 @@ export declare class ListingResponseDto {
     seller: UserResponseDto;
     category: CategoryResponseDto | null;
     images: ListingImageResponseDto[];
+    attributes?: ListingAttributeResponseDto[];
     constructor(partial: any);
 }

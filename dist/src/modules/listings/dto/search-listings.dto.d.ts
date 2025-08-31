@@ -1,4 +1,5 @@
 import { ListingStatus } from '@prisma/client';
+import { AttributeFilterDto } from './listing-attribute.dto';
 export declare enum SortBy {
     CREATED_AT = "createdAt",
     PRICE = "price",
@@ -23,4 +24,5 @@ export declare class SearchListingsDto {
     page?: number;
     limit?: number;
     sellerId?: number;
+    attributeFilters?: AttributeFilterDto[];
 }

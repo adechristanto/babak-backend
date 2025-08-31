@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
+const listing_attribute_dto_1 = require("./listing-attribute.dto");
 var SortBy;
 (function (SortBy) {
     SortBy["CREATED_AT"] = "createdAt";
@@ -40,6 +41,7 @@ class SearchListingsDto {
     page = 1;
     limit = 20;
     sellerId;
+    attributeFilters;
 }
 exports.SearchListingsDto = SearchListingsDto;
 __decorate([
@@ -135,4 +137,16 @@ __decorate([
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], SearchListingsDto.prototype, "sellerId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: [listing_attribute_dto_1.AttributeFilterDto],
+        required: false,
+        description: 'Category-specific attribute filters'
+    }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => listing_attribute_dto_1.AttributeFilterDto),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], SearchListingsDto.prototype, "attributeFilters", void 0);
 //# sourceMappingURL=search-listings.dto.js.map

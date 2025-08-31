@@ -3,6 +3,7 @@ import { Expose, Type } from 'class-transformer';
 import { ListingStatus } from '@prisma/client';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { CategoryResponseDto } from '../../categories/dto/category-response.dto';
+import { ListingAttributeResponseDto } from './listing-attribute.dto';
 
 export class ListingImageResponseDto {
   @ApiProperty({ example: 1 })
@@ -113,6 +114,11 @@ export class ListingResponseDto {
   @Expose()
   @Type(() => ListingImageResponseDto)
   images: ListingImageResponseDto[];
+
+  @ApiProperty({ type: [ListingAttributeResponseDto], required: false })
+  @Expose()
+  @Type(() => ListingAttributeResponseDto)
+  attributes?: ListingAttributeResponseDto[];
 
   constructor(partial: any) {
     Object.assign(this, partial);

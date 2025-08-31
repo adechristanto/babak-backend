@@ -40,6 +40,25 @@ enum NegotiableStatus {
   MAKE_OFFER
 }
 
+enum AttributeType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+  SELECT
+  MULTISELECT
+  RANGE
+}
+
+enum AttributeDataType {
+  STRING
+  INTEGER
+  DECIMAL
+  BOOLEAN
+  DATE
+  JSON
+}
+
 // Users and Authentication
 model User {
   id          Int      @id @default(autoincrement())
@@ -137,8 +156,37 @@ model Category {
   parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children Category[] @relation("CategoryHierarchy")
   listings Listing[]
+  attributes CategoryAttribute[]
 
   @@map("categories")
+}
+
+// Category Attributes - Defines what attributes are available for each category
+model CategoryAttribute {
+  id          Int             @id @default(autoincrement())
+  categoryId  Int             @map("category_id")
+  name        String          // Display name (e.g., "Bedrooms", "Engine Power")
+  key         String          // Internal key (e.g., "bedrooms", "engine_power")
+  type        AttributeType   // UI component type
+  dataType    AttributeDataType // Data storage type
+  required    Boolean         @default(false)
+  searchable  Boolean         @default(true) // Can be used in search filters
+  sortable    Boolean         @default(false) // Can be used for sorting
+  options     Json?           // For SELECT/MULTISELECT: array of options
+  validation  Json?           // Validation rules (min, max, pattern, etc.)
+  unit        String?         // Unit of measurement (e.g., "m²", "HP", "kg")
+  placeholder String?         // Placeholder text for form fields
+  helpText    String?         // Help text for users
+  displayOrder Int           @default(0) @map("display_order")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  listingAttributes ListingAttribute[]
+
+  @@unique([categoryId, key])
+  @@map("category_attributes")
 }
 
 // Listings
@@ -175,8 +223,33 @@ model Listing {
   reviews   Review[]
   reports   Report[]
   views     ListingView[]
+  attributes ListingAttribute[]
 
   @@map("listings")
+}
+
+// Listing Attributes - Stores actual attribute values for listings
+model ListingAttribute {
+  id          Int               @id @default(autoincrement())
+  listingId   Int               @map("listing_id")
+  attributeId Int               @map("attribute_id")
+  value       String?           // String representation of the value
+  numericValue Decimal?         @db.Decimal(15, 4) @map("numeric_value") // For numeric values and ranges
+  booleanValue Boolean?         @map("boolean_value") // For boolean values
+  dateValue   DateTime?         @map("date_value") // For date values
+  jsonValue   Json?             @map("json_value") // For complex values (arrays, objects)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  listing   Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  attribute CategoryAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, attributeId])
+  @@index([attributeId, numericValue]) // For range queries
+  @@index([attributeId, value]) // For text searches
+  @@index([attributeId, booleanValue]) // For boolean filters
+  @@map("listing_attributes")
 }
 
 model ListingImage {

@@ -1,4 +1,5 @@
 import { ListingCondition, NegotiableStatus } from '@prisma/client';
+import { CreateListingAttributeDto } from './listing-attribute.dto';
 export declare class CreateListingDto {
     title: string;
     description?: string;
@@ -14,4 +15,5 @@ export declare class CreateListingDto {
     locationPlaceId?: string;
     condition?: ListingCondition;
     negotiable?: NegotiableStatus;
+    attributes?: CreateListingAttributeDto[];
 }

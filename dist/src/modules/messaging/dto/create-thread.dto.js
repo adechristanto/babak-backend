@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class CreateThreadDto {
     listingId;
+    message;
 }
 exports.CreateThreadDto = CreateThreadDto;
 __decorate([
@@ -23,4 +24,15 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Number)
 ], CreateThreadDto.prototype, "listingId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'Hi! Is this item still available?',
+        description: 'Optional initial message to send',
+        required: false
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(1000),
+    __metadata("design:type", String)
+], CreateThreadDto.prototype, "message", void 0);
 //# sourceMappingURL=create-thread.dto.js.map
