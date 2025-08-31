@@ -24,6 +24,21 @@ enum ListingStatus {
   ARCHIVED
 }
 
+enum ListingCondition {
+  NEW
+  LIKE_NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
+enum NegotiableStatus {
+  FIXED_PRICE
+  NEGOTIABLE
+  MAKE_OFFER
+}
+
 // Users and Authentication
 model User {
   id          Int      @id @default(autoincrement())
@@ -97,6 +112,8 @@ model Listing {
   latitude    Decimal?      @db.Decimal(10, 8)
   longitude   Decimal?      @db.Decimal(11, 8)
   status      ListingStatus @default(DRAFT)
+  condition   ListingCondition? @default(GOOD)
+  negotiable  NegotiableStatus @default(FIXED_PRICE)
   isVip       Boolean       @default(false) @map("is_vip")
   isFeatured  Boolean       @default(false) @map("is_featured")
   createdAt   DateTime      @default(now()) @map("created_at")

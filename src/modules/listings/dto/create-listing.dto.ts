@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsNumber, IsInt, Min, Max, IsDecimal } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsNumber, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { ListingCondition, NegotiableStatus } from '@prisma/client';
 
 export class CreateListingDto {
   @ApiProperty({ example: 'iPhone 14 Pro Max' })
@@ -16,7 +17,7 @@ export class CreateListingDto {
   @ApiProperty({ example: 999.99 })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }) => parseFloat(value as string))
   price: number;
 
   @ApiProperty({ example: 'USD', default: 'USD' })
@@ -40,7 +41,7 @@ export class CreateListingDto {
   @Min(-90)
   @Max(90)
   @IsOptional()
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }) => parseFloat(value as string))
   latitude?: number;
 
   @ApiProperty({ example: -74.0060, description: 'Longitude coordinate' })
@@ -48,6 +49,26 @@ export class CreateListingDto {
   @Min(-180)
   @Max(180)
   @IsOptional()
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }) => parseFloat(value as string))
   longitude?: number;
+
+  @ApiProperty({ 
+    enum: ListingCondition, 
+    example: ListingCondition.GOOD,
+    description: 'Condition of the item',
+    default: ListingCondition.GOOD
+  })
+  @IsEnum(ListingCondition)
+  @IsOptional()
+  condition?: ListingCondition = ListingCondition.GOOD;
+
+  @ApiProperty({ 
+    enum: NegotiableStatus, 
+    example: NegotiableStatus.FIXED_PRICE,
+    description: 'Price negotiation status',
+    default: NegotiableStatus.FIXED_PRICE
+  })
+  @IsEnum(NegotiableStatus)
+  @IsOptional()
+  negotiable?: NegotiableStatus = NegotiableStatus.FIXED_PRICE;
 }
