@@ -30,8 +30,10 @@ export class AdminService {
         where: { status: ListingStatus.PENDING }
       }),
       
-      // Total revenue (placeholder - no listing upgrades model)
-      Promise.resolve({ _sum: { amount: 0 } }),
+      // Total revenue (from listing upgrades)
+      this.prisma.listingUpgrade.aggregate({
+        _sum: { amount: true }
+      }),
       
       // New users this month
       this.prisma.user.count({
@@ -61,8 +63,15 @@ export class AdminService {
         }
       }),
       
-      // Revenue this month (placeholder - no listing upgrades model)
-      Promise.resolve({ _sum: { amount: 0 } })
+      // Revenue this month
+      this.prisma.listingUpgrade.aggregate({
+        _sum: { amount: true },
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          }
+        }
+      })
     ]);
 
     return {
@@ -78,7 +87,7 @@ export class AdminService {
   }
 
   async getRecentActivity() {
-    const activities = await Promise.all([
+    const activities = await this.prisma.$transaction([
       // Recent user registrations
       this.prisma.user.findMany({
         take: 3,
@@ -110,8 +119,28 @@ export class AdminService {
         }
       }),
       
-      // Recent payments (placeholder - no listing upgrades model)
-      Promise.resolve([]),
+      // Recent payments
+      this.prisma.listingUpgrade.findMany({
+        take: 3,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          amount: true,
+          listing: {
+            select: {
+              id: true,
+              title: true,
+              seller: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          },
+          createdAt: true
+        }
+      }),
       
       // Recent reports
       this.prisma.report.findMany({
@@ -131,7 +160,7 @@ export class AdminService {
       })
     ]);
 
-    const [recentUsers, recentListings, , recentReports] = activities;
+    const [recentUsers, recentListings, recentPayments, recentReports] = activities;
 
     return {
       recentUsers: recentUsers.map(user => ({
@@ -152,7 +181,15 @@ export class AdminService {
         icon: 'FileText',
         color: 'yellow'
       })),
-      recentPayments: [], // Placeholder - no payment system implemented yet
+      recentPayments: recentPayments.map(payment => ({
+        id: payment.id,
+        type: 'payment_received',
+        title: 'Payment received',
+        description: `$${payment.amount} for ${payment.listing.title}`,
+        time: this.getTimeAgo(payment.createdAt),
+        icon: 'DollarSign',
+        color: 'green'
+      })),
       recentReports: recentReports.map(report => ({
         id: report.id,
         type: 'user_reported',
@@ -168,12 +205,14 @@ export class AdminService {
   async getUsers(page: number = 1, limit: number = 10, search?: string, _status?: string) {
     const skip = (page - 1) * limit;
     
-    const where = search ? {
-      OR: [
-        { name: { contains: search, mode: 'insensitive' as const } },
-        { email: { contains: search, mode: 'insensitive' as const } }
-      ]
-    } : {};
+    const where: any = {};
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -205,7 +244,7 @@ export class AdminService {
       users.map(async (user) => {
         const [listingsCount, avgRating] = await Promise.all([
           this.prisma.listing.count({
-            where: { sellerId: user.id }
+            where: { listing: { sellerId: user.id } }
           }),
           this.prisma.review.aggregate({
             where: { listing: { sellerId: user.id } },

@@ -3,20 +3,44 @@ export declare class AdminService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     getDashboardStats(): Promise<{
-        totalUsers: any;
-        activeListings: any;
-        pendingListings: any;
-        totalRevenue: any;
-        newUsersThisMonth: any;
-        newListingsToday: any;
-        urgentReviews: any;
-        revenueThisMonth: any;
+        totalUsers: number;
+        activeListings: number;
+        pendingListings: number;
+        totalRevenue: number;
+        newUsersThisMonth: number;
+        newListingsToday: number;
+        urgentReviews: number;
+        revenueThisMonth: number;
     }>;
     getRecentActivity(): Promise<{
-        recentUsers: any;
-        recentListings: any;
-        recentPayments: any;
-        recentReports: any;
+        recentUsers: {
+            id: number;
+            type: string;
+            title: string;
+            description: string;
+            time: string;
+            icon: string;
+            color: string;
+        }[];
+        recentListings: {
+            id: number;
+            type: string;
+            title: string;
+            description: string;
+            time: string;
+            icon: string;
+            color: string;
+        }[];
+        recentPayments: never[];
+        recentReports: {
+            id: number;
+            type: string;
+            title: string;
+            description: string;
+            time: string;
+            icon: string;
+            color: string;
+        }[];
     }>;
     getUsers(page?: number, limit?: number, search?: string, _status?: string): Promise<{
         data: {
@@ -58,42 +82,42 @@ export declare class AdminService {
                 position: number;
             }[];
         } & {
-            status: import("@prisma/client").$Enums.ListingStatus;
             id: number;
+            categoryId: number | null;
+            createdAt: Date;
+            updatedAt: Date;
             locationAddress: string | null;
             locationCity: string | null;
             locationCountry: string | null;
             locationPlaceId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            sellerId: number;
             title: string;
             description: string | null;
             price: import("@prisma/client/runtime/library").Decimal;
             currency: string;
-            categoryId: number | null;
             city: string | null;
             latitude: import("@prisma/client/runtime/library").Decimal | null;
             longitude: import("@prisma/client/runtime/library").Decimal | null;
+            status: import("@prisma/client").$Enums.ListingStatus;
             condition: import("@prisma/client").$Enums.ListingCondition | null;
             negotiable: import("@prisma/client").$Enums.NegotiableStatus;
             isVip: boolean;
             isFeatured: boolean;
             expiresAt: Date | null;
+            sellerId: number;
         })[];
         reviews: ({
             reviewer: {
                 id: number;
-                email: string;
                 name: string | null;
+                email: string;
             };
         } & {
             id: number;
             createdAt: Date;
-            listingId: number;
             rating: number;
-            reviewerId: number;
             comment: string | null;
+            listingId: number;
+            reviewerId: number;
         })[];
         _count: {
             listings: number;
@@ -102,9 +126,12 @@ export declare class AdminService {
         };
     } & {
         id: number;
-        email: string;
-        passwordHash: string;
         name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        emailVerificationToken: string | null;
+        passwordHash: string;
         avatarUrl: string | null;
         phone: string | null;
         location: string | null;
@@ -117,16 +144,13 @@ export declare class AdminService {
         bio: string | null;
         role: import("@prisma/client").$Enums.UserRole;
         emailVerified: boolean;
-        emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateUserStatus(id: number, status: 'active' | 'suspended' | 'banned', _reason?: string): Promise<{
         status: string;
         id: number;
-        email: string;
         name: string | null;
+        email: string;
         emailVerified: boolean;
     }>;
     getAnalyticsOverview(): Promise<{
@@ -173,23 +197,23 @@ export declare class AdminService {
                 title: string;
                 seller: {
                     id: number;
-                    email: string;
                     name: string | null;
+                    email: string;
                 };
             };
             reporter: {
                 id: number;
-                email: string;
                 name: string | null;
+                email: string;
             };
         } & {
             id: number;
             createdAt: Date;
             category: string;
             listingId: number;
+            details: string | null;
             reporterId: number;
             reason: string;
-            details: string | null;
         })[];
         meta: {
             total: number;

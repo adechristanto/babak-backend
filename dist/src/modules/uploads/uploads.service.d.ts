@@ -27,5 +27,5 @@ export declare class UploadsService implements OnModuleInit {
     private validateFile;
     private getFileExtension;
     getOptimizedImageUrl(key: string, width?: number, height?: number, quality?: number): string;
-    validateImageFile(fileName: string, contentType: string, maxWidth?: number, maxHeight?: number): void;
+    validateImageFile(fileName: string, contentType: string, _maxWidth?: number, _maxHeight?: number): void;
 }

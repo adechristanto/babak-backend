@@ -1,7 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, IsInt, Min, IsNumber, IsDateString, ValidateNested, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsInt, Min, IsNumber, IsDateString, ValidateNested, IsArray, IsEnum } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { AttributeType, AttributeDataType } from '@prisma/client';
+
+// Define enums locally to avoid circular imports
+export enum SortBy {
+  CREATED_AT = 'createdAt',
+  PRICE = 'price',
+  TITLE = 'title',
+  UPDATED_AT = 'updatedAt',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 
 export class CreateListingAttributeDto {
   @ApiProperty({ example: 1 })
@@ -254,4 +267,14 @@ export class EnhancedSearchListingsDto {
   @IsOptional()
   @Type(() => Number)
   limit?: number = 20;
+
+  @ApiProperty({ enum: SortBy, required: false, default: SortBy.CREATED_AT })
+  @IsEnum(SortBy)
+  @IsOptional()
+  sortBy?: SortBy = SortBy.CREATED_AT;
+
+  @ApiProperty({ enum: SortOrder, required: false, default: SortOrder.DESC })
+  @IsEnum(SortOrder)
+  @IsOptional()
+  sortOrder?: SortOrder = SortOrder.DESC;
 }

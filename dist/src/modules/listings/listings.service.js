@@ -20,6 +20,16 @@ const user_response_dto_1 = require("../users/dto/user-response.dto");
 const category_response_dto_1 = require("../categories/dto/category-response.dto");
 const listing_attributes_service_1 = require("./listing-attributes.service");
 const email_service_1 = require("../email/email.service");
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
 let ListingsService = class ListingsService {
     prisma;
     listingAttributesService;
@@ -194,8 +204,36 @@ let ListingsService = class ListingsService {
             }),
             this.prisma.listing.count({ where }),
         ]);
-        const listingDtos = await Promise.all(listings.map(listing => this.mapToResponseDto(listing)));
-        const meta = new paginated_listings_dto_1.PaginationMetaDto(page || 1, limit || 20, total);
+        let filteredListings = listings;
+        let adjustedTotal = total;
+        if (latitude !== undefined &&
+            longitude !== undefined &&
+            radiusKm !== undefined &&
+            radiusKm > 0) {
+            filteredListings = listings.filter(listing => {
+                if (listing.latitude === null || listing.longitude === null) {
+                    return false;
+                }
+                const distance = calculateDistance(latitude, longitude, Number(listing.latitude), Number(listing.longitude));
+                return distance <= radiusKm;
+            });
+            if (filteredListings.length !== listings.length) {
+                const allMatchingListings = await this.prisma.listing.findMany({
+                    where,
+                    select: { id: true, latitude: true, longitude: true },
+                });
+                const filteredCount = allMatchingListings.filter(listing => {
+                    if (listing.latitude === null || listing.longitude === null) {
+                        return false;
+                    }
+                    const distance = calculateDistance(latitude, longitude, Number(listing.latitude), Number(listing.longitude));
+                    return distance <= radiusKm;
+                }).length;
+                adjustedTotal = filteredCount;
+            }
+        }
+        const listingDtos = await Promise.all(filteredListings.map(listing => this.mapToResponseDto(listing)));
+        const meta = new paginated_listings_dto_1.PaginationMetaDto(page || 1, limit || 20, adjustedTotal);
         return new paginated_listings_dto_1.PaginatedListingsDto(listingDtos, meta);
     }
     async findOne(id, viewerId, ipAddress, userAgent) {
@@ -388,7 +426,7 @@ let ListingsService = class ListingsService {
         await this.notifyAdminsForApproval(updatedListing);
         return await this.mapToResponseDto(updatedListing);
     }
-    async approve(id, adminId) {
+    async approve(id, _adminId) {
         const listing = await this.prisma.listing.findUnique({
             where: { id },
             include: {
@@ -419,7 +457,7 @@ let ListingsService = class ListingsService {
         await this.notifySellerOfApproval(updatedListing);
         return await this.mapToResponseDto(updatedListing);
     }
-    async reject(id, adminId, reason) {
+    async reject(id, _adminId, reason) {
         const listing = await this.prisma.listing.findUnique({
             where: { id },
             include: {

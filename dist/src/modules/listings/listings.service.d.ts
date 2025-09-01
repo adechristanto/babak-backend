@@ -22,8 +22,8 @@ export declare class ListingsService {
     update(id: number, updateListingDto: UpdateListingDto, userId: number): Promise<ListingResponseDto>;
     remove(id: number, userId: number): Promise<void>;
     submitForApproval(id: number, userId: number): Promise<ListingResponseDto>;
-    approve(id: number, adminId: number): Promise<ListingResponseDto>;
-    reject(id: number, adminId: number, reason?: string): Promise<ListingResponseDto>;
+    approve(id: number, _adminId: number): Promise<ListingResponseDto>;
+    reject(id: number, _adminId: number, reason?: string): Promise<ListingResponseDto>;
     findPendingApproval(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     private notifyAdminsForApproval;
     private notifySellerOfApproval;

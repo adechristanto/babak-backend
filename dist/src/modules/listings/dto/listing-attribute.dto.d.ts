@@ -1,4 +1,14 @@
 import { AttributeType, AttributeDataType } from '@prisma/client';
+export declare enum SortBy {
+    CREATED_AT = "createdAt",
+    PRICE = "price",
+    TITLE = "title",
+    UPDATED_AT = "updatedAt"
+}
+export declare enum SortOrder {
+    ASC = "asc",
+    DESC = "desc"
+}
 export declare class CreateListingAttributeDto {
     attributeId: number;
     value?: string;
@@ -63,4 +73,6 @@ export declare class EnhancedSearchListingsDto {
     attributeFilters?: AttributeFilterDto[];
     page?: number;
     limit?: number;
+    sortBy?: SortBy;
+    sortOrder?: SortOrder;
 }

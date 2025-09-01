@@ -11,6 +11,19 @@ import { CategoryResponseDto } from '../categories/dto/category-response.dto';
 import { ListingAttributesService } from './listing-attributes.service';
 import { EmailService } from '../email/email.service';
 
+// Utility function to calculate distance between two points using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in kilometers
+}
+
 @Injectable()
 export class ListingsService {
   constructor(
@@ -129,16 +142,17 @@ export class ListingsService {
       where.city = { contains: city, mode: 'insensitive' };
     }
 
-    // Geo radius filter (rough box filter for simplicity)
+    // Geo radius filter with proper distance calculation
     if (
       latitude !== undefined &&
       longitude !== undefined &&
       radiusKm !== undefined &&
       radiusKm > 0
     ) {
-      // 1 degree lat ~ 111km; lon scales by cos(lat)
-      const latDelta = radiusKm / 111;
+      // First, apply a bounding box filter for performance (pre-filter)
+      const latDelta = radiusKm / 111; // Approximate: 1 degree lat ≈ 111km
       const lonDelta = radiusKm / (111 * Math.cos((latitude * Math.PI) / 180) || 1);
+
       where.AND = where.AND || [];
       (where.AND as any[]).push({
         latitude: { gte: latitude - latDelta, lte: latitude + latDelta },
@@ -254,8 +268,61 @@ export class ListingsService {
       this.prisma.listing.count({ where }),
     ]);
 
-    const listingDtos = await Promise.all(listings.map(listing => this.mapToResponseDto(listing)));
-    const meta = new PaginationMetaDto(page || 1, limit || 20, total);
+    // Apply precise distance filtering if radius search is enabled
+    let filteredListings = listings;
+    let adjustedTotal = total;
+
+    if (
+      latitude !== undefined &&
+      longitude !== undefined &&
+      radiusKm !== undefined &&
+      radiusKm > 0
+    ) {
+      filteredListings = listings.filter(listing => {
+        if (listing.latitude === null || listing.longitude === null) {
+          return false; // Exclude listings without coordinates
+        }
+
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          Number(listing.latitude),
+          Number(listing.longitude)
+        );
+
+        return distance <= radiusKm;
+      });
+
+      // For radius searches, we need to recalculate the total count
+      // This is a simplified approach - in production, you might want to optimize this
+      if (filteredListings.length !== listings.length) {
+        // Get all listings matching other criteria for accurate count
+        const allMatchingListings = await this.prisma.listing.findMany({
+          where,
+          select: { id: true, latitude: true, longitude: true },
+        });
+
+        const filteredCount = allMatchingListings.filter(listing => {
+          if (listing.latitude === null || listing.longitude === null) {
+            return false;
+          }
+
+          const distance = calculateDistance(
+            latitude,
+            longitude,
+            Number(listing.latitude),
+            Number(listing.longitude)
+          );
+
+          return distance <= radiusKm;
+        }).length;
+
+        adjustedTotal = filteredCount;
+      }
+    }
+
+    const listingDtos = await Promise.all(filteredListings.map(listing => this.mapToResponseDto(listing)));
+    const meta = new PaginationMetaDto(page || 1, limit || 20, adjustedTotal);
 
     return new PaginatedListingsDto(listingDtos, meta);
   }

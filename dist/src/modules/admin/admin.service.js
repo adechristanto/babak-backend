@@ -27,9 +27,7 @@ let AdminService = class AdminService {
             this.prisma.listing.count({
                 where: { status: client_1.ListingStatus.PENDING }
             }),
-            this.prisma.listingUpgrade.aggregate({
-                _sum: { amount: true }
-            }),
+            Promise.resolve({ _sum: { amount: 0 } }),
             this.prisma.user.count({
                 where: {
                     createdAt: {
@@ -52,14 +50,7 @@ let AdminService = class AdminService {
                     }
                 }
             }),
-            this.prisma.listingUpgrade.aggregate({
-                _sum: { amount: true },
-                where: {
-                    createdAt: {
-                        gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-                    }
-                }
-            })
+            Promise.resolve({ _sum: { amount: 0 } })
         ]);
         return {
             totalUsers,
@@ -73,7 +64,7 @@ let AdminService = class AdminService {
         };
     }
     async getRecentActivity() {
-        const activities = await this.prisma.$transaction([
+        const activities = await Promise.all([
             this.prisma.user.findMany({
                 take: 3,
                 orderBy: { createdAt: 'desc' },
@@ -101,27 +92,7 @@ let AdminService = class AdminService {
                     createdAt: true
                 }
             }),
-            this.prisma.listingUpgrade.findMany({
-                take: 3,
-                orderBy: { createdAt: 'desc' },
-                select: {
-                    id: true,
-                    amount: true,
-                    listing: {
-                        select: {
-                            id: true,
-                            title: true,
-                            seller: {
-                                select: {
-                                    id: true,
-                                    name: true
-                                }
-                            }
-                        }
-                    },
-                    createdAt: true
-                }
-            }),
+            Promise.resolve([]),
             this.prisma.report.findMany({
                 take: 3,
                 orderBy: { createdAt: 'desc' },
@@ -138,7 +109,7 @@ let AdminService = class AdminService {
                 }
             })
         ]);
-        const [recentUsers, recentListings, recentPayments, recentReports] = activities;
+        const [recentUsers, recentListings, , recentReports] = activities;
         return {
             recentUsers: recentUsers.map(user => ({
                 id: user.id,
@@ -158,15 +129,7 @@ let AdminService = class AdminService {
                 icon: 'FileText',
                 color: 'yellow'
             })),
-            recentPayments: recentPayments.map(payment => ({
-                id: payment.id,
-                type: 'payment_received',
-                title: 'Payment received',
-                description: `$${payment.amount} for ${payment.listing.title}`,
-                time: this.getTimeAgo(payment.createdAt),
-                icon: 'DollarSign',
-                color: 'green'
-            })),
+            recentPayments: [],
             recentReports: recentReports.map(report => ({
                 id: report.id,
                 type: 'user_reported',
@@ -180,13 +143,12 @@ let AdminService = class AdminService {
     }
     async getUsers(page = 1, limit = 10, search, _status) {
         const skip = (page - 1) * limit;
-        const where = {};
-        if (search) {
-            where.OR = [
+        const where = search ? {
+            OR: [
                 { name: { contains: search, mode: 'insensitive' } },
                 { email: { contains: search, mode: 'insensitive' } }
-            ];
-        }
+            ]
+        } : {};
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
                 where,
@@ -218,7 +180,7 @@ let AdminService = class AdminService {
                     where: { sellerId: user.id }
                 }),
                 this.prisma.review.aggregate({
-                    where: { sellerId: user.id },
+                    where: { listing: { sellerId: user.id } },
                     _avg: { rating: true }
                 })
             ]);
@@ -231,7 +193,7 @@ let AdminService = class AdminService {
                 lastActivity: user.updatedAt,
                 status: user.emailVerified ? 'active' : 'pending',
                 listingsCount,
-                rating: avgRating._avg.rating || 0,
+                rating: avgRating._avg?.rating ?? 0,
                 verified: user.emailVerified,
                 role: user.role
             };

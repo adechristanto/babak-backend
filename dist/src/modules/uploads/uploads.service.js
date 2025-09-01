@@ -51,9 +51,9 @@ let UploadsService = class UploadsService {
                 await this.s3Client.send(new client_s3_1.CreateBucketCommand({ Bucket: this.bucket }));
                 console.log(`✅ Created bucket '${this.bucket}'`);
             }
-            catch (createError) {
-                console.error(`❌ Failed to create bucket '${this.bucket}':`, createError);
-                throw createError;
+            catch (_createError) {
+                console.error(`❌ Failed to create bucket '${this.bucket}':`, _createError);
+                throw _createError;
             }
         }
     }
@@ -148,7 +148,7 @@ let UploadsService = class UploadsService {
         }
         return url;
     }
-    validateImageFile(fileName, contentType, maxWidth = 2048, maxHeight = 2048) {
+    validateImageFile(fileName, contentType, _maxWidth = 2048, _maxHeight = 2048) {
         this.validateFile(fileName, contentType, {
             maxSize: 5 * 1024 * 1024,
             allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],

@@ -9,10 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EnhancedSearchListingsDto = exports.AttributeFilterDto = exports.ValidateAttributeValueDto = exports.BulkListingAttributesDto = exports.ListingAttributeResponseDto = exports.UpdateListingAttributeDto = exports.CreateListingAttributeDto = void 0;
+exports.EnhancedSearchListingsDto = exports.AttributeFilterDto = exports.ValidateAttributeValueDto = exports.BulkListingAttributesDto = exports.ListingAttributeResponseDto = exports.UpdateListingAttributeDto = exports.CreateListingAttributeDto = exports.SortOrder = exports.SortBy = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+var SortBy;
+(function (SortBy) {
+    SortBy["CREATED_AT"] = "createdAt";
+    SortBy["PRICE"] = "price";
+    SortBy["TITLE"] = "title";
+    SortBy["UPDATED_AT"] = "updatedAt";
+})(SortBy || (exports.SortBy = SortBy = {}));
+var SortOrder;
+(function (SortOrder) {
+    SortOrder["ASC"] = "asc";
+    SortOrder["DESC"] = "desc";
+})(SortOrder || (exports.SortOrder = SortOrder = {}));
 class CreateListingAttributeDto {
     attributeId;
     value;
@@ -256,6 +268,8 @@ class EnhancedSearchListingsDto {
     attributeFilters;
     page = 1;
     limit = 20;
+    sortBy = SortBy.CREATED_AT;
+    sortOrder = SortOrder.DESC;
 }
 exports.EnhancedSearchListingsDto = EnhancedSearchListingsDto;
 __decorate([
@@ -343,4 +357,16 @@ __decorate([
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], EnhancedSearchListingsDto.prototype, "limit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: SortBy, required: false, default: SortBy.CREATED_AT }),
+    (0, class_validator_1.IsEnum)(SortBy),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], EnhancedSearchListingsDto.prototype, "sortBy", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: SortOrder, required: false, default: SortOrder.DESC }),
+    (0, class_validator_1.IsEnum)(SortOrder),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], EnhancedSearchListingsDto.prototype, "sortOrder", void 0);
 //# sourceMappingURL=listing-attribute.dto.js.map
