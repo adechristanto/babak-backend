@@ -30,10 +30,8 @@ export class AdminService {
         where: { status: ListingStatus.PENDING }
       }),
       
-      // Total revenue (from listing upgrades)
-      this.prisma.listingUpgrade.aggregate({
-        _sum: { amount: true }
-      }),
+      // Total revenue (placeholder - no listing upgrades model)
+      Promise.resolve({ _sum: { amount: 0 } }),
       
       // New users this month
       this.prisma.user.count({
@@ -63,15 +61,8 @@ export class AdminService {
         }
       }),
       
-      // Revenue this month
-      this.prisma.listingUpgrade.aggregate({
-        _sum: { amount: true },
-        where: {
-          createdAt: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-          }
-        }
-      })
+      // Revenue this month (placeholder - no listing upgrades model)
+      Promise.resolve({ _sum: { amount: 0 } })
     ]);
 
     return {
@@ -87,7 +78,7 @@ export class AdminService {
   }
 
   async getRecentActivity() {
-    const activities = await this.prisma.$transaction([
+    const activities = await Promise.all([
       // Recent user registrations
       this.prisma.user.findMany({
         take: 3,
@@ -119,28 +110,8 @@ export class AdminService {
         }
       }),
       
-      // Recent payments
-      this.prisma.listingUpgrade.findMany({
-        take: 3,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          amount: true,
-          listing: {
-            select: {
-              id: true,
-              title: true,
-              seller: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            }
-          },
-          createdAt: true
-        }
-      }),
+      // Recent payments (placeholder - no listing upgrades model)
+      Promise.resolve([]),
       
       // Recent reports
       this.prisma.report.findMany({
@@ -181,12 +152,12 @@ export class AdminService {
         icon: 'FileText',
         color: 'yellow'
       })),
-      recentPayments: recentPayments.map(payment => ({
-        id: payment.id,
+      recentPayments: recentPayments.map((payment: any) => ({
+        id: payment.id || 0,
         type: 'payment_received',
         title: 'Payment received',
-        description: `$${payment.amount} for ${payment.listing.title}`,
-        time: this.getTimeAgo(payment.createdAt),
+        description: `$${payment.amount || 0} for ${payment.listing?.title || 'Unknown listing'}`,
+        time: this.getTimeAgo(payment.createdAt || new Date()),
         icon: 'DollarSign',
         color: 'green'
       })),
@@ -247,7 +218,7 @@ export class AdminService {
             where: { sellerId: user.id }
           }),
           this.prisma.review.aggregate({
-            where: { sellerId: user.id },
+            where: { listing: { sellerId: user.id } },
             _avg: { rating: true }
           })
         ]);
@@ -261,7 +232,7 @@ export class AdminService {
           lastActivity: user.updatedAt,
           status: user.emailVerified ? 'active' : 'pending',
           listingsCount,
-          rating: avgRating._avg.rating || 0,
+          rating: avgRating._avg?.rating ?? 0,
           verified: user.emailVerified,
           role: user.role
         };
