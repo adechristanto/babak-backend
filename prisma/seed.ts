@@ -1,1707 +1,718 @@
-import { PrismaClient, UserRole, ListingStatus, AttributeType, AttributeDataType } from '@prisma/client';
-import * as argon2 from 'argon2';
+import {
+  PrismaClient,
+  UserRole,
+  ListingStatus,
+  ListingCondition,
+  NegotiableStatus,
+} from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-function slugify(text) {
-  return text
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-}
+// Category and subcategory data
+const categoriesData = [
+  {
+    id: 'real-estate',
+    name: 'Real Estate',
+    description: 'Properties for sale and rent',
+    icon: '🏠',
+    subcategories: [
+      {
+        id: 'apartments',
+        name: 'Apartments',
+        description: 'Apartment units for sale or rent',
+      },
+      { id: 'houses', name: 'Houses', description: 'Houses and villas' },
+      { id: 'land', name: 'Land', description: 'Land plots and lots' },
+      {
+        id: 'shops-offices',
+        name: 'Shops and Offices',
+        description: 'Commercial properties',
+      },
+      {
+        id: 'factory-workshops',
+        name: 'Factory and Workshops',
+        description: 'Industrial properties',
+      },
+      {
+        id: 'tourist-properties',
+        name: 'Tourist Properties',
+        description: 'Hotels, resorts, and vacation rentals',
+      },
+    ],
+  },
+  {
+    id: 'vehicles',
+    name: 'Vehicles',
+    description: 'Cars, motorcycles, and automotive',
+    icon: '🚗',
+    subcategories: [
+      {
+        id: 'cars',
+        name: 'Cars',
+        description: 'Automobiles and passenger vehicles',
+      },
+      {
+        id: 'motorcycles',
+        name: 'Motorcycles',
+        description: 'Motorcycles and scooters',
+      },
+      {
+        id: 'trucks-commercial',
+        name: 'Trucks and Commercial Vehicles',
+        description: 'Commercial and heavy-duty vehicles',
+      },
+      {
+        id: 'agricultural-industrial',
+        name: 'Agricultural and Industrial Vehicles',
+        description: 'Farm and industrial machinery',
+      },
+      {
+        id: 'marine-vehicles',
+        name: 'Marine Vehicles',
+        description: 'Boats, yachts, and water vehicles',
+      },
+    ],
+  },
+  {
+    id: 'electronics',
+    name: 'Electronics',
+    description: 'Electronic devices and home appliances',
+    icon: '📱',
+    subcategories: [
+      {
+        id: 'televisions',
+        name: 'Televisions',
+        description: 'Smart TVs, LED, OLED displays',
+      },
+      {
+        id: 'refrigerators-freezers',
+        name: 'Refrigerators and Freezers',
+        description: 'Kitchen cooling appliances',
+      },
+      {
+        id: 'washing-machines-dryers',
+        name: 'Washing Machines & Dryers',
+        description: 'Laundry appliances',
+      },
+      {
+        id: 'ovens-microwaves',
+        name: 'Ovens and Microwaves',
+        description: 'Cooking appliances',
+      },
+      {
+        id: 'vacuum-cleaners',
+        name: 'Vacuum Cleaners',
+        description: 'Cleaning appliances',
+      },
+      {
+        id: 'cameras',
+        name: 'Cameras',
+        description: 'Digital cameras and equipment',
+      },
+      {
+        id: 'video-games',
+        name: 'Video Games',
+        description: 'Gaming consoles and games',
+      },
+      {
+        id: 'air-conditioners',
+        name: 'Air Conditioners',
+        description: 'Climate control systems',
+      },
+      {
+        id: 'water-heaters',
+        name: 'Water Heaters',
+        description: 'Water heating systems',
+      },
+      {
+        id: 'audio-equipment',
+        name: 'Audio Equipment',
+        description: 'Speakers, sound systems',
+      },
+      {
+        id: 'e-books',
+        name: 'E-Books',
+        description: 'Electronic reading devices',
+      },
+      {
+        id: 'security-surveillance',
+        name: 'Security and Surveillance Systems',
+        description: 'Security cameras and systems',
+      },
+      {
+        id: 'home-kitchen-appliances',
+        name: 'Home and Kitchen Appliances',
+        description: 'Small home appliances',
+      },
+      {
+        id: 'uncategorized-appliances',
+        name: 'Uncategorized Appliances',
+        description: 'Other electronic appliances',
+      },
+    ],
+  },
+];
 
-// Category attributes definitions
-async function createCategoryAttributes(createdCategories, createdSubcategories) {
-  // Real Estate Attributes
-  const realEstateCategory = createdCategories.get('real-estate');
-  if (realEstateCategory) {
-    const realEstateAttributes = [
-      {
-        name: 'Property Type',
-        key: 'property_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['apartment', 'house', 'land', 'shop', 'office', 'factory', 'workshop', 'tourist'],
-        displayOrder: 1
-      },
-      {
-        name: 'Listing Purpose',
-        key: 'listing_purpose',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['sale', 'rent'],
-        displayOrder: 2
-      },
-      {
-        name: 'Built Area',
-        key: 'built_area',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: true,
-        sortable: true,
-        unit: 'm²',
-        validation: { min: 1, max: 10000 },
-        placeholder: 'Enter built area',
-        displayOrder: 3
-      },
-      {
-        name: 'Lot Size',
-        key: 'lot_size',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: true,
-        sortable: true,
-        unit: 'm²',
-        validation: { min: 1, max: 100000 },
-        placeholder: 'Enter lot size',
-        displayOrder: 4
-      },
-      {
-        name: 'Bedrooms',
-        key: 'bedrooms',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        sortable: true,
-        validation: { min: 0, max: 20 },
-        placeholder: 'Number of bedrooms',
-        displayOrder: 5
-      },
-      {
-        name: 'Bathrooms',
-        key: 'bathrooms',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        sortable: true,
-        validation: { min: 0, max: 20 },
-        placeholder: 'Number of bathrooms',
-        displayOrder: 6
-      },
-      {
-        name: 'Parking Spots',
-        key: 'parking_spots',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        validation: { min: 0, max: 50 },
-        placeholder: 'Number of parking spots',
-        displayOrder: 7
-      },
-      {
-        name: 'Furnishing',
-        key: 'furnishing',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        options: ['unfurnished', 'semifurnished', 'furnished'],
-        displayOrder: 8
-      },
-      {
-        name: 'Floor Number',
-        key: 'floor_number',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        validation: { min: 0, max: 200 },
-        placeholder: 'Floor number',
-        displayOrder: 9
-      },
-      {
-        name: 'Total Floors',
-        key: 'total_floors',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        validation: { min: 1, max: 200 },
-        placeholder: 'Total floors in building',
-        displayOrder: 10
-      },
-      {
-        name: 'Year Built',
-        key: 'year_built',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        sortable: true,
-        validation: { min: 1800, max: new Date().getFullYear() + 5 },
-        placeholder: 'Year built',
-        displayOrder: 11
-      },
-      {
-        name: 'Heating Type',
-        key: 'heating_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        options: ['gas', 'electric', 'central', 'none'],
-        displayOrder: 12
-      },
-      {
-        name: 'Air Conditioning',
-        key: 'air_conditioning',
-        type: AttributeType.BOOLEAN,
-        dataType: AttributeDataType.BOOLEAN,
-        required: false,
-        searchable: true,
-        displayOrder: 13
-      },
-      {
-        name: 'Elevator',
-        key: 'elevator',
-        type: AttributeType.BOOLEAN,
-        dataType: AttributeDataType.BOOLEAN,
-        required: false,
-        searchable: true,
-        displayOrder: 14
-      },
-      {
-        name: 'Balcony/Terrace',
-        key: 'balcony_terrace',
-        type: AttributeType.BOOLEAN,
-        dataType: AttributeDataType.BOOLEAN,
-        required: false,
-        searchable: true,
-        displayOrder: 15
-      },
-      {
-        name: 'Garden/Patio',
-        key: 'garden_patio',
-        type: AttributeType.BOOLEAN,
-        dataType: AttributeDataType.BOOLEAN,
-        required: false,
-        searchable: true,
-        displayOrder: 16
-      },
-      {
-        name: 'Pet Allowed',
-        key: 'pet_allowed',
-        type: AttributeType.BOOLEAN,
-        dataType: AttributeDataType.BOOLEAN,
-        required: false,
-        searchable: true,
-        displayOrder: 17
-      }
-    ];
-
-    for (const attr of realEstateAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: {
-          categoryId_key: {
-            categoryId: realEstateCategory.id,
-            key: attr.key
-          }
-        },
-        update: {},
-        create: {
-          categoryId: realEstateCategory.id,
-          ...attr
-        }
-      });
-    }
-  }
-
-  // Vehicle attributes are now assigned to specific subcategories (e.g., cars)
-
-  // Electronics Attributes (general + a few subcategory specifics)
-  const electronicsCategory = createdCategories.get('electronics');
-  if (electronicsCategory) {
-    const electronicsAttributes = [
-      {
-        name: 'Brand',
-        key: 'brand',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'e.g., Samsung, LG, Sony',
-        displayOrder: 1,
-      },
-      {
-        name: 'Model',
-        key: 'model',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'Model name/number',
-        displayOrder: 2,
-      },
-      {
-        name: 'Warranty',
-        key: 'warranty',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        options: ['no_warranty', '3_months', '6_months', '12_months', '24_months'],
-        displayOrder: 3,
-      },
-    ];
-
-    for (const attr of electronicsAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: {
-          categoryId_key: {
-            categoryId: electronicsCategory.id,
-            key: attr.key,
-          },
-        },
-        update: {},
-        create: { categoryId: electronicsCategory.id, ...attr },
-      });
-    }
-
-    // Subcategory-specific attributes
-    const televisions = createdSubcategories.get('televisions');
-    if (televisions) {
-      const tvAttrs = [
-        {
-          name: 'Screen Size',
-          key: 'screen_size',
-          type: AttributeType.NUMBER,
-          dataType: AttributeDataType.INTEGER,
-          required: false,
-          searchable: true,
-          unit: 'in',
-          validation: { min: 19, max: 105 },
-          placeholder: 'e.g., 55',
-          displayOrder: 1,
-        },
-        {
-          name: 'Resolution',
-          key: 'resolution',
-          type: AttributeType.SELECT,
-          dataType: AttributeDataType.STRING,
-          required: false,
-          searchable: true,
-          options: ['HD', 'Full HD', '4K', '8K'],
-          displayOrder: 2,
-        },
-        {
-          name: 'Panel Type',
-          key: 'panel_type',
-          type: AttributeType.SELECT,
-          dataType: AttributeDataType.STRING,
-          required: false,
-          searchable: true,
-          options: ['LED', 'QLED', 'OLED'],
-          displayOrder: 3,
-        },
-      ];
-      for (const attr of tvAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: {
-            categoryId_key: { categoryId: televisions.id, key: attr.key },
-          },
-          update: {},
-          create: { categoryId: televisions.id, ...attr },
-        });
-      }
-    }
-
-    const refrigerators = createdSubcategories.get('refrigerators-and-freezers');
-    if (refrigerators) {
-      const refAttrs = [
-        {
-          name: 'Type',
-          key: 'refrigerator_type',
-          type: AttributeType.SELECT,
-          dataType: AttributeDataType.STRING,
-          required: false,
-          searchable: true,
-          options: ['top_freezer', 'bottom_freezer', 'french_door', 'side_by_side', 'chest_freezer'],
-          displayOrder: 1,
-        },
-        {
-          name: 'Capacity',
-          key: 'capacity_liters',
-          type: AttributeType.NUMBER,
-          dataType: AttributeDataType.INTEGER,
-          required: false,
-          searchable: true,
-          unit: 'L',
-          validation: { min: 50, max: 1000 },
-          displayOrder: 2,
-        },
-      ];
-      for (const attr of refAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: {
-            categoryId_key: { categoryId: refrigerators.id, key: attr.key },
-          },
-          update: {},
-          create: { categoryId: refrigerators.id, ...attr },
-        });
-      }
-    }
-  }
-
-  // Furniture Attributes
-  const furnitureCategory = createdCategories.get('furniture');
-  if (furnitureCategory) {
-    const furnitureAttributes = [
-      {
-        name: 'Item Type',
-        key: 'item_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['bed', 'wardrobe', 'dresser', 'nightstand', 'mattress', 'sofa', 'table', 'chair', 'set', 'other'],
-        displayOrder: 1,
-      },
-      {
-        name: 'Material',
-        key: 'material',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        options: ['wood', 'metal', 'glass', 'fabric', 'leather', 'plastic', 'other'],
-        displayOrder: 2,
-      },
-      {
-        name: 'Color/Finish',
-        key: 'color',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        displayOrder: 3,
-      },
-      {
-        name: 'Length',
-        key: 'length',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: false,
-        unit: 'cm',
-        validation: { min: 1, max: 1000, decimalPlaces: 1 },
-        displayOrder: 4,
-      },
-      {
-        name: 'Width',
-        key: 'width',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: false,
-        unit: 'cm',
-        validation: { min: 1, max: 1000, decimalPlaces: 1 },
-        displayOrder: 5,
-      },
-      {
-        name: 'Height',
-        key: 'height',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: false,
-        unit: 'cm',
-        validation: { min: 1, max: 1000, decimalPlaces: 1 },
-        displayOrder: 6,
-      },
-    ];
-
-    for (const attr of furnitureAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: furnitureCategory.id, key: attr.key } },
-        update: {},
-        create: { categoryId: furnitureCategory.id, ...attr },
-      });
-    }
-  }
-
-  // Clothing/Fashion Attributes
-  const clothingCategory = createdCategories.get('clothing');
-  if (clothingCategory) {
-    const clothingAttributes = [
-      {
-        name: 'Category',
-        key: 'fashion_category',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['men', 'women', 'kids'],
-        displayOrder: 1,
-      },
-      {
-        name: 'Item Type',
-        key: 'item_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['shirt', 'pants', 'dress', 'shoes', 'accessories', 'outerwear', 'other'],
-        displayOrder: 2,
-      },
-      {
-        name: 'Size',
-        key: 'size',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'e.g., S, M, 42 EU',
-        displayOrder: 3,
-      },
-      {
-        name: 'Brand',
-        key: 'brand',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        placeholder: 'Brand name',
-        displayOrder: 4,
-      },
-      {
-        name: 'Material',
-        key: 'material',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        displayOrder: 5,
-      },
-      {
-        name: 'Color',
-        key: 'color',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: false,
-        searchable: true,
-        displayOrder: 6,
-      },
-    ];
-
-    for (const attr of clothingAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: clothingCategory.id, key: attr.key } },
-        update: {},
-        create: { categoryId: clothingCategory.id, ...attr },
-      });
-    }
-  }
-
-  // Phones & Accessories (top-level and subcategories)
-  const phonesCategory = createdCategories.get('phones-and-accessories');
-  if (phonesCategory) {
-    const phoneGeneralAttrs = [
-      { name: 'Brand', key: 'brand', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 1 },
-      { name: 'Model', key: 'model', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 2 },
-      { name: 'Storage Capacity', key: 'storage', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['32GB','64GB','128GB','256GB','512GB','1TB'], displayOrder: 3 },
-      { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
-      { name: 'Warranty', key: 'warranty', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['no_warranty','3_months','6_months','12_months'], displayOrder: 5 },
-      { name: 'Accessories Included', key: 'accessories_included', type: AttributeType.MULTISELECT, dataType: AttributeDataType.JSON, required: false, searchable: true, options: ['box','charger','cable','earbuds','case','screen_protector'], displayOrder: 6 },
-    ];
-    for (const attr of phoneGeneralAttrs) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: phonesCategory.id, key: attr.key } },
-        update: {},
-        create: { categoryId: phonesCategory.id, ...attr },
-      });
-    }
-
-    const mobilePhones = createdSubcategories.get('mobile-phones');
-    if (mobilePhones) {
-      const mobileAttrs = [
-        { name: 'Operating System', key: 'os', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['ios','android','other'], displayOrder: 1 },
-        { name: 'Screen Size', key: 'screen_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'in', validation: { min: 4.7, max: 7.6, decimalPlaces: 1 }, displayOrder: 2 },
-        { name: 'RAM', key: 'ram', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'], displayOrder: 3 },
-        { name: 'Battery Health', key: 'battery_health', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: '%', validation: { min: 50, max: 100 }, displayOrder: 4 },
-        { name: 'Dual SIM', key: 'dual_sim', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
-      ];
-      for (const attr of mobileAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: mobilePhones.id, key: attr.key } },
-          update: {},
-          create: { categoryId: mobilePhones.id, ...attr },
-        });
-      }
-    }
-  }
-
-  // Computers & Accessories
-  const computersCategory = createdCategories.get('computers-and-accessories');
-  if (computersCategory) {
-    const computerGeneralAttrs = [
-      { name: 'Device Type', key: 'device_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['laptop','desktop','monitor','accessory'], displayOrder: 1 },
-      { name: 'Brand', key: 'brand', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 2 },
-      { name: 'Model', key: 'model', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, displayOrder: 3 },
-    ];
-    for (const attr of computerGeneralAttrs) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: computersCategory.id, key: attr.key } },
-        update: {},
-        create: { categoryId: computersCategory.id, ...attr },
-      });
-    }
-
-    const laptops = createdSubcategories.get('laptops');
-    if (laptops) {
-      const laptopAttrs = [
-        { name: 'CPU', key: 'cpu', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 1 },
-        { name: 'RAM', key: 'ram', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4GB','8GB','16GB','32GB','64GB'], displayOrder: 2 },
-        { name: 'Storage', key: 'storage', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['128GB SSD','256GB SSD','512GB SSD','1TB SSD','2TB SSD','HDD'], displayOrder: 3 },
-        { name: 'GPU', key: 'gpu', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
-      ];
-      for (const attr of laptopAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: laptops.id, key: attr.key } },
-          update: {},
-          create: { categoryId: laptops.id, ...attr },
-        });
-      }
-    }
-  }
-
-  // Vehicle subcategory-specific attributes
-  const cars = createdSubcategories.get('cars');
-  if (cars) {
-    const carAttrs = [
-      { name: 'Drive Type', key: 'drive_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['fwd','rwd','awd','4x4'], displayOrder: 1 },
-      { name: 'Doors', key: 'doors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 6 }, displayOrder: 2 },
-      { name: 'Seats', key: 'seats', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 9 }, displayOrder: 3 },
-      { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
-      { name: 'Trim', key: 'trim', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 5 },
-    ];
-    for (const attr of carAttrs) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: cars.id, key: attr.key } },
-        update: {},
-        create: { categoryId: cars.id, ...attr },
-      });
-    }
-  }
-  const trucks = createdSubcategories.get('trucks-commercial');
-  if (trucks) {
-    const truckAttrs = [
-      { name: 'GVWR', key: 'gvwr', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'kg', validation: { min: 1000, max: 40000, decimalPlaces: 0 }, displayOrder: 1 },
-      { name: 'Payload', key: 'payload', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: 'kg', validation: { min: 0, max: 30000 }, displayOrder: 2 },
-      { name: 'Wheelbase', key: 'wheelbase', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: false, unit: 'mm', validation: { min: 2000, max: 8000 }, displayOrder: 3 },
-      { name: 'Axle Config', key: 'axle_config', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4x2','4x4','6x2','6x4','8x4'], displayOrder: 4 },
-      { name: 'Liftgate', key: 'liftgate', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
-    ];
-    for (const attr of truckAttrs) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: trucks.id, key: attr.key } },
-        update: {},
-        create: { categoryId: trucks.id, ...attr },
-      });
-    }
-  }
-  const marine = createdSubcategories.get('marine-vehicles');
-  if (marine) {
-    const marineAttrs = [
-      { name: 'Boat Type', key: 'boat_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['sailboat','motorboat','yacht','inflatable','other'], displayOrder: 1 },
-      { name: 'Length', key: 'boat_length', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'ft', validation: { min: 6, max: 200, decimalPlaces: 1 }, displayOrder: 2 },
-      { name: 'Engine Type', key: 'engine_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['inboard','outboard','jet'], displayOrder: 3 },
-      { name: 'Engine Hours', key: 'engine_hours', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 0, max: 20000 }, displayOrder: 4 },
-      { name: 'Trailer Included', key: 'trailer_included', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
-    ];
-    for (const attr of marineAttrs) {
-      await prisma.categoryAttribute.upsert({
-        where: { categoryId_key: { categoryId: marine.id, key: attr.key } },
-        update: {},
-        create: { categoryId: marine.id, ...attr },
-      });
-    }
-  }
-
-  // Real Estate subcategory-specific attributes
-  if (realEstateCategory) {
-    const apartments = createdSubcategories.get('apartments');
-    if (apartments) {
-      const aptAttrs = [
-        { name: 'Unit Type', key: 'unit_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['studio','1br','2br','3br','4br_plus'], displayOrder: 1 },
-        { name: 'HOA/Maintenance Fee', key: 'maintenance_fee', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: false, unit: 'USD/mo', validation: { min: 0, max: 5000, decimalPlaces: 2 }, displayOrder: 2 },
-        { name: 'Elevator', key: 'elevator', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 3 },
-        { name: 'Balcony', key: 'balcony', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 4 },
-        { name: 'Parking Type', key: 'parking_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['garage','street','none'], displayOrder: 5 },
-      ];
-      for (const attr of aptAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: apartments.id, key: attr.key } },
-          update: {},
-          create: { categoryId: apartments.id, ...attr },
-        });
-      }
-    }
-    const houses = createdSubcategories.get('houses');
-    if (houses) {
-      const houseAttrs = [
-        { name: 'Lot Size', key: 'lot_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'm²', validation: { min: 1, max: 100000 }, displayOrder: 1 },
-        { name: 'Number of Floors', key: 'num_floors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 1, max: 10 }, displayOrder: 2 },
-        { name: 'Garage Type', key: 'garage_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['attached','detached','carport','none'], displayOrder: 3 },
-        { name: 'Basement', key: 'basement', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['none','unfinished','finished'], displayOrder: 4 },
-      ];
-      for (const attr of houseAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: houses.id, key: attr.key } },
-          update: {},
-          create: { categoryId: houses.id, ...attr },
-        });
-      }
-    }
-    const land = createdSubcategories.get('land');
-    if (land) {
-      const landAttrs = [
-        { name: 'Land Type', key: 'land_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['residential','commercial','agricultural'], displayOrder: 1 },
-        { name: 'Zoning', key: 'zoning', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 2 },
-        { name: 'Frontage', key: 'frontage', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: false, unit: 'm', validation: { min: 1, max: 1000, decimalPlaces: 1 }, displayOrder: 3 },
-        { name: 'Access Road', key: 'access_road', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['paved','gravel','dirt'], displayOrder: 4 },
-        { name: 'Utilities', key: 'utilities', type: AttributeType.MULTISELECT, dataType: AttributeDataType.JSON, required: false, searchable: true, options: ['water','electricity','gas','sewer','internet'], displayOrder: 5 },
-      ];
-      for (const attr of landAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: land.id, key: attr.key } },
-          update: {},
-          create: { categoryId: land.id, ...attr },
-        });
-      }
-    }
-  }
-
-  // Vehicle Attributes - Assign to cars subcategory specifically
-  const carsSubcategory = createdSubcategories.get('cars');
-  if (carsSubcategory) {
-    const carAttributes = [
-      {
-        name: 'Vehicle Type',
-        key: 'vehicle_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['car', 'motorcycle', 'truck', 'commercial', 'agricultural', 'industrial', 'marine'],
-        displayOrder: 1
-      },
-      {
-        name: 'Make',
-        key: 'make',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'Vehicle make (e.g., Toyota, Honda)',
-        displayOrder: 2
-      },
-      {
-        name: 'Model',
-        key: 'model',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'Vehicle model',
-        displayOrder: 3
-      },
-      {
-        name: 'Year',
-        key: 'year',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: true,
-        searchable: true,
-        sortable: true,
-        validation: { min: 1900, max: new Date().getFullYear() + 2 },
-        placeholder: 'Manufacturing year',
-        displayOrder: 4
-      },
-      {
-        name: 'Mileage',
-        key: 'mileage',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: true,
-        searchable: true,
-        sortable: true,
-        unit: 'km',
-        validation: { min: 0, max: 1000000 },
-        placeholder: 'Vehicle mileage',
-        displayOrder: 5
-      },
-      {
-        name: 'Fuel Type',
-        key: 'fuel_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['petrol', 'diesel', 'hybrid', 'electric', 'lpg', 'cng'],
-        displayOrder: 6
-      },
-      {
-        name: 'Transmission',
-        key: 'transmission',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['manual', 'automatic', 'cvt', 'dct'],
-        displayOrder: 7
-      },
-      {
-        name: 'Body Type',
-        key: 'body_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['sedan', 'suv', 'hatchback', 'coupe', 'van', 'pickup', 'convertible', 'wagon'],
-        displayOrder: 8
-      },
-      {
-        name: 'Engine Power',
-        key: 'engine_power',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        sortable: true,
-        unit: 'HP',
-        validation: { min: 1, max: 2000 },
-        placeholder: 'Engine power in HP',
-        displayOrder: 9
-      },
-      {
-        name: 'Engine Displacement',
-        key: 'engine_displacement',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: true,
-        unit: 'L',
-        validation: { min: 0.1, max: 20 },
-        placeholder: 'Engine displacement in liters',
-        displayOrder: 10
-      }
-    ];
-
-    for (const attr of carAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: {
-          categoryId_key: {
-            categoryId: carsSubcategory.id,
-            key: attr.key
-          }
-        },
-        update: {},
-        create: {
-          categoryId: carsSubcategory.id,
-          ...attr
-        }
-      });
-    }
-  }
-}
-
-// Sample product data for different categories
-const productData = {
-  'real-estate': [
-    { title: 'Modern 2BR Apartment in City Center', price: 250000, description: 'Beautiful modern apartment with city views' },
-    { title: 'Luxury Villa with Pool', price: 850000, description: 'Spacious villa with private pool and garden' },
-    { title: 'Commercial Office Space', price: 450000, description: 'Prime office space in business district' },
-    { title: 'Residential Land Plot', price: 180000, description: 'Ready to build residential land' },
-    { title: 'Retail Shop Space', price: 320000, description: 'High-traffic retail location' },
-    { title: 'Industrial Warehouse', price: 680000, description: 'Large warehouse with loading dock' },
-    { title: 'Beachfront Vacation Rental', price: 420000, description: 'Tourist property with ocean views' },
-    { title: 'Studio Apartment', price: 120000, description: 'Cozy studio perfect for singles' },
-    { title: 'Family House with Garden', price: 380000, description: '3BR house with large backyard' },
-    { title: 'Penthouse Suite', price: 750000, description: 'Luxury penthouse with rooftop terrace' }
+// Product templates for each subcategory
+const productTemplates: Record<
+  string,
+  Array<{
+    title: string;
+    description: string;
+    price: number;
+    condition: ListingCondition;
+  }>
+> = {
+  // Real Estate
+  apartments: [
+    {
+      title: 'Modern 2BR Apartment in Damascus',
+      description:
+        'Beautiful apartment in city center with modern amenities, balcony, and parking.',
+      price: 85000,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Cozy 1BR Studio in Aleppo',
+      description:
+        'Fully furnished studio apartment in residential area, perfect for students or young professionals.',
+      price: 45000,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'vehicles': [
-    { title: 'Toyota Camry 2020', price: 25000, description: 'Well-maintained sedan with low mileage' },
-    { title: 'Honda Motorcycle 2021', price: 8500, description: 'Sport motorcycle in excellent condition' },
-    { title: 'Ford F-150 Pickup Truck', price: 35000, description: 'Reliable work truck with towing capacity' },
-    { title: 'John Deere Tractor', price: 45000, description: 'Agricultural tractor for farming' },
-    { title: 'Luxury Yacht 40ft', price: 250000, description: 'Beautiful yacht for marine adventures' },
-    { title: 'BMW X5 SUV', price: 42000, description: 'Luxury SUV with premium features' },
-    { title: 'Harley Davidson Motorcycle', price: 18000, description: 'Classic Harley in mint condition' },
-    { title: 'Commercial Delivery Van', price: 28000, description: 'Perfect for business delivery' },
-    { title: 'Electric Scooter', price: 1200, description: 'Eco-friendly urban transportation' },
-    { title: 'Boat Trailer', price: 3500, description: 'Heavy-duty trailer for boats' }
+  houses: [
+    {
+      title: 'Traditional Syrian House in Damascus',
+      description:
+        'Beautiful traditional house with courtyard, 3 bedrooms, and garden.',
+      price: 180000,
+      condition: ListingCondition.GOOD,
+    },
+    {
+      title: 'Modern Villa in Aleppo Suburbs',
+      description:
+        'Contemporary villa with 4 bedrooms, swimming pool, and large garden.',
+      price: 250000,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'electronics': [
-    { title: 'Samsung 65" Smart TV', price: 1200, description: '4K Ultra HD Smart Television' },
-    { title: 'LG Refrigerator', price: 800, description: 'French door refrigerator with ice maker' },
-    { title: 'Samsung Washing Machine', price: 650, description: 'Front-load washer with steam function' },
-    { title: 'Bosch Microwave Oven', price: 200, description: 'Built-in microwave with convection' },
-    { title: 'Dyson Vacuum Cleaner', price: 400, description: 'Cordless stick vacuum with HEPA filter' },
-    { title: 'Canon EOS Camera', price: 1200, description: 'Professional DSLR camera with lens' },
-    { title: 'PlayStation 5 Console', price: 500, description: 'Latest gaming console with controller' },
-    { title: 'LG Air Conditioner', price: 350, description: 'Split AC unit with remote control' },
-    { title: 'Water Heater Tank', price: 280, description: '50-gallon electric water heater' },
-    { title: 'Bose Sound System', price: 600, description: 'Premium audio system with subwoofer' }
+  land: [
+    {
+      title: 'Agricultural Land in Homs',
+      description:
+        'Fertile agricultural land, 5 acres, suitable for farming or development.',
+      price: 75000,
+      condition: ListingCondition.NEW,
+    },
+    {
+      title: 'Residential Plot in Damascus',
+      description:
+        'Prime residential plot in upscale neighborhood, ready for construction.',
+      price: 120000,
+      condition: ListingCondition.NEW,
+    },
   ],
-  'furniture': [
-    { title: 'Queen Size Bed Frame', price: 450, description: 'Modern wooden bed frame with headboard' },
-    { title: 'Leather Living Room Set', price: 1200, description: '3-seater sofa with matching chairs' },
-    { title: 'Dining Table Set', price: 800, description: '6-person dining table with chairs' },
-    { title: 'Kids Bunk Bed', price: 350, description: 'Twin over twin bunk bed for children' },
-    { title: 'Office Desk Chair', price: 200, description: 'Ergonomic office chair with lumbar support' },
-    { title: 'Garden Patio Set', price: 600, description: 'Outdoor furniture set with umbrella' },
-    { title: 'Chandelier Light Fixture', price: 300, description: 'Crystal chandelier for dining room' },
-    { title: 'Bookshelf Unit', price: 180, description: '5-shelf bookcase in dark wood' },
-    { title: 'Coffee Table', price: 250, description: 'Glass top coffee table with metal legs' },
-    { title: 'Wardrobe Cabinet', price: 400, description: 'Large wardrobe with mirror doors' }
+  'shops-offices': [
+    {
+      title: 'Retail Shop in Damascus Market',
+      description:
+        'Prime location retail shop in busy market area, high foot traffic.',
+      price: 95000,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Office Space in Aleppo Business District',
+      description:
+        'Modern office space with meeting rooms and parking facilities.',
+      price: 85000,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'phones-accessories': [
-    { title: 'iPhone 15 Pro', price: 1200, description: 'Latest iPhone with 256GB storage' },
-    { title: 'iPad Pro 12.9"', price: 1100, description: 'Apple iPad Pro with M2 chip' },
-    { title: 'Apple Watch Series 9', price: 400, description: 'Smartwatch with health monitoring' },
-    { title: 'Anker Power Bank', price: 50, description: '20000mAh portable charger' },
-    { title: 'iPhone Case Collection', price: 30, description: 'Premium protective phone cases' },
-    { title: 'AirPods Pro', price: 250, description: 'Wireless earbuds with noise cancellation' },
-    { title: 'Fast Charging Cable Set', price: 25, description: 'USB-C and Lightning cables' },
-    { title: 'Premium Phone Number', price: 500, description: 'Memorable phone number for business' }
+  'factory-workshops': [
+    {
+      title: 'Textile Factory in Aleppo',
+      description:
+        'Large textile factory with modern equipment and storage facilities.',
+      price: 350000,
+      condition: ListingCondition.GOOD,
+    },
+    {
+      title: 'Food Processing Workshop in Homs',
+      description:
+        'Food processing facility with industrial kitchen and storage.',
+      price: 180000,
+      condition: ListingCondition.EXCELLENT,
+    },
   ],
-  'computers-accessories': [
-    { title: 'MacBook Pro 16"', price: 2500, description: 'Apple MacBook Pro with M2 chip' },
-    { title: 'Dell Desktop Computer', price: 1200, description: 'Gaming desktop with RTX graphics' },
-    { title: 'Samsung 27" Monitor', price: 300, description: '4K monitor for professional use' },
-    { title: 'Logitech Gaming Mouse', price: 80, description: 'High-precision gaming mouse' },
-    { title: 'Logitech Webcam', price: 120, description: '4K webcam for video conferencing' },
-    { title: 'Mechanical Keyboard', price: 150, description: 'RGB mechanical gaming keyboard' },
-    { title: 'HP Laser Printer', price: 200, description: 'All-in-one printer with scanner' },
-    { title: 'Computer Speakers', price: 100, description: '2.1 speaker system with subwoofer' },
-    { title: 'WiFi Router', price: 80, description: 'High-speed wireless router' },
-    { title: 'Adobe Creative Suite', price: 600, description: 'Software license for design work' }
+  'tourist-properties': [
+    {
+      title: 'Boutique Hotel in Damascus Old City',
+      description: 'Charming boutique hotel in historic district with 8 rooms.',
+      price: 280000,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Beach Resort in Tartus',
+      description: 'Small beach resort with 12 rooms and restaurant.',
+      price: 450000,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'childrens-world': [
-    { title: 'Kids Winter Jacket', price: 45, description: 'Warm winter jacket for children' },
-    { title: 'Baby Stroller', price: 200, description: 'Lightweight stroller with canopy' },
-    { title: 'Car Seat for Toddler', price: 150, description: 'Safety car seat with 5-point harness' },
-    { title: 'Educational Toy Set', price: 35, description: 'Learning toys for early development' },
-    { title: 'Children\'s Book Collection', price: 25, description: 'Set of classic children\'s books' },
-    { title: 'Baby Care Kit', price: 40, description: 'Complete baby care essentials' },
-    { title: 'Organic Baby Food', price: 30, description: 'Natural baby food variety pack' }
+
+  // Vehicles
+  cars: [
+    {
+      title: 'Toyota Camry 2018',
+      description:
+        'Well-maintained sedan with low mileage, excellent fuel efficiency.',
+      price: 18000,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Hyundai Tucson 2019',
+      description: 'SUV in great condition, perfect for family use.',
+      price: 22000,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'clothing': [
-    { title: 'Men\'s Business Suit', price: 300, description: 'Professional business suit set' },
-    { title: 'Women\'s Designer Dress', price: 180, description: 'Elegant evening dress' },
-    { title: 'Kids School Uniform', price: 60, description: 'Complete school uniform set' },
-    { title: 'Leather Handbag', price: 120, description: 'Genuine leather designer handbag' },
-    { title: 'Luxury Watch', price: 800, description: 'Swiss-made luxury timepiece' },
-    { title: 'Designer Sunglasses', price: 200, description: 'Premium brand sunglasses' }
+  motorcycles: [
+    {
+      title: 'Honda CG 125',
+      description: 'Reliable motorcycle perfect for city commuting.',
+      price: 2500,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Yamaha YBR 125',
+      description: 'Fuel-efficient motorcycle with low maintenance costs.',
+      price: 2800,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'jobs': [
-    { title: 'Software Developer Position', price: 0, description: 'Full-stack developer job opportunity' },
-    { title: 'Marketing Manager Role', price: 0, description: 'Senior marketing position available' },
-    { title: 'Graphic Designer Portfolio', price: 0, description: 'Creative designer seeking projects' }
+  'trucks-commercial': [
+    {
+      title: 'Isuzu NPR Truck',
+      description:
+        'Commercial truck perfect for delivery and transport business.',
+      price: 35000,
+      condition: ListingCondition.GOOD,
+    },
+    {
+      title: 'Mitsubishi Fuso Canter',
+      description: 'Light commercial truck with good fuel economy.',
+      price: 28000,
+      condition: ListingCondition.EXCELLENT,
+    },
   ],
-  'solar-energy': [
-    { title: 'Solar Panel Kit 5kW', price: 8000, description: 'Complete solar panel system' },
-    { title: 'Solar Inverter', price: 1200, description: 'High-efficiency solar inverter' },
-    { title: 'Solar Battery Bank', price: 2500, description: 'Deep cycle solar batteries' },
-    { title: 'Solar Charge Controller', price: 300, description: 'MPPT charge controller' },
-    { title: 'Solar Installation Service', price: 1500, description: 'Professional installation service' }
+  'agricultural-industrial': [
+    {
+      title: 'John Deere Tractor',
+      description:
+        'Agricultural tractor in excellent condition, perfect for farming.',
+      price: 45000,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Industrial Forklift',
+      description: 'Heavy-duty forklift for warehouse and industrial use.',
+      price: 32000,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'services-businesses': [
-    { title: 'House Cleaning Service', price: 100, description: 'Professional house cleaning' },
-    { title: 'Car Repair Service', price: 200, description: 'Complete automotive repair' },
-    { title: 'Business Consulting', price: 500, description: 'Professional business consulting' },
-    { title: 'IT Support Service', price: 150, description: '24/7 IT technical support' },
-    { title: 'Online Tutoring', price: 50, description: 'Personalized online tutoring' }
+  'marine-vehicles': [
+    {
+      title: 'Fishing Boat',
+      description:
+        'Well-maintained fishing boat with engine and fishing equipment.',
+      price: 28000,
+      condition: ListingCondition.GOOD,
+    },
+    {
+      title: 'Yacht for Sale',
+      description: 'Luxury yacht with sleeping quarters and modern amenities.',
+      price: 180000,
+      condition: ListingCondition.EXCELLENT,
+    },
   ],
-  'handicrafts': [
-    { title: 'Handmade Jewelry Set', price: 80, description: 'Unique handmade jewelry' },
-    { title: 'Wooden Craft Box', price: 45, description: 'Hand-carved wooden box' },
-    { title: 'Ceramic Vase', price: 35, description: 'Handcrafted ceramic vase' },
-    { title: 'Leather Wallet', price: 60, description: 'Handmade leather wallet' },
-    { title: 'Natural Soap Set', price: 25, description: 'Organic handmade soaps' }
+
+  // Electronics
+  televisions: [
+    {
+      title: 'Samsung 55" Smart TV',
+      description:
+        '4K Ultra HD Smart Television with excellent picture quality.',
+      price: 800,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'LG 65" OLED TV',
+      description:
+        'Premium OLED television with perfect blacks and vibrant colors.',
+      price: 1200,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'building-materials': [
-    { title: 'Cement Bags (50kg)', price: 15, description: 'Portland cement for construction' },
-    { title: 'Steel Rebar Set', price: 200, description: 'Construction steel reinforcement' },
-    { title: 'Concrete Blocks', price: 2, description: 'Building blocks for walls' },
-    { title: 'Ceramic Tiles', price: 25, description: 'Floor and wall tiles' },
-    { title: 'Paint Cans Set', price: 80, description: 'Interior and exterior paint' }
+  'refrigerators-freezers': [
+    {
+      title: 'Samsung Side-by-Side Refrigerator',
+      description:
+        'Large capacity refrigerator with ice maker and water dispenser.',
+      price: 900,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'LG French Door Refrigerator',
+      description:
+        'Modern refrigerator with bottom freezer and smart features.',
+      price: 1100,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'industrial-equipment': [
-    { title: 'Industrial Welding Machine', price: 2500, description: 'Professional welding equipment' },
-    { title: 'Forklift Truck', price: 15000, description: 'Used forklift in good condition' },
-    { title: 'Industrial Generator', price: 8000, description: 'Backup power generator' },
-    { title: 'Air Compressor', price: 1200, description: 'Industrial air compressor' },
-    { title: 'Safety Equipment Set', price: 300, description: 'Complete safety gear' }
+  'washing-machines-dryers': [
+    {
+      title: 'Samsung Front Load Washer',
+      description:
+        'Energy-efficient front load washing machine with steam function.',
+      price: 700,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'LG Washer-Dryer Combo',
+      description: 'Space-saving washer-dryer combination unit.',
+      price: 900,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'sports-equipment': [
-    { title: 'Treadmill Exercise Machine', price: 800, description: 'Home fitness treadmill' },
-    { title: 'Basketball Set', price: 150, description: 'Portable basketball hoop' },
-    { title: 'Tennis Racket Set', price: 120, description: 'Professional tennis equipment' },
-    { title: 'Camping Tent', price: 200, description: '4-person camping tent' },
-    { title: 'Scuba Diving Gear', price: 600, description: 'Complete diving equipment' }
+  'ovens-microwaves': [
+    {
+      title: 'Bosch Electric Oven',
+      description: 'Professional electric oven with convection cooking.',
+      price: 600,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Samsung Microwave',
+      description:
+        'Countertop microwave with smart features and sensor cooking.',
+      price: 200,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'musical-equipment': [
-    { title: 'Acoustic Guitar', price: 300, description: 'Quality acoustic guitar' },
-    { title: 'Digital Piano', price: 800, description: '88-key digital piano' },
-    { title: 'Drum Set', price: 500, description: 'Complete drum kit' },
-    { title: 'Guitar Amplifier', price: 200, description: 'Electric guitar amplifier' },
-    { title: 'Microphone Set', price: 150, description: 'Professional microphone kit' }
+  'vacuum-cleaners': [
+    {
+      title: 'Dyson V11 Cordless Vacuum',
+      description: 'High-performance cordless vacuum with long battery life.',
+      price: 400,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Shark Navigator Vacuum',
+      description: 'Powerful upright vacuum with excellent suction.',
+      price: 250,
+      condition: ListingCondition.GOOD,
+    },
   ],
-  'animals': [
-    { title: 'Golden Retriever Puppy', price: 800, description: 'Purebred golden retriever' },
-    { title: 'Persian Cat', price: 400, description: 'Beautiful Persian cat' },
-    { title: 'Parrot Cage Set', price: 120, description: 'Large bird cage with accessories' },
-    { title: 'Pet Food Supply', price: 50, description: 'Premium pet food variety pack' }
+  cameras: [
+    {
+      title: 'Canon EOS R5',
+      description: 'Professional mirrorless camera with 45MP sensor.',
+      price: 3500,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Sony A7 III',
+      description:
+        'Full-frame mirrorless camera with excellent low-light performance.',
+      price: 2200,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'medical-supplies': [
-    { title: 'Blood Pressure Monitor', price: 80, description: 'Digital blood pressure device' },
-    { title: 'Wheelchair', price: 300, description: 'Lightweight wheelchair' },
-    { title: 'First Aid Kit', price: 45, description: 'Complete first aid supplies' },
-    { title: 'Medical Scale', price: 120, description: 'Digital medical scale' }
+  'video-games': [
+    {
+      title: 'PlayStation 5 Console',
+      description: 'Latest gaming console with DualSense controller.',
+      price: 800,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Nintendo Switch OLED',
+      description: 'Portable gaming console with beautiful OLED screen.',
+      price: 400,
+      condition: ListingCondition.LIKE_NEW,
+    },
   ],
-  'foodstuffs': [
-    { title: 'Fresh Organic Vegetables', price: 25, description: 'Farm fresh organic produce' },
-    { title: 'Premium Beef Cuts', price: 60, description: 'High-quality beef selection' },
-    { title: 'Artisan Cheese Set', price: 35, description: 'Gourmet cheese variety' },
-    { title: 'Fresh Baked Bread', price: 8, description: 'Artisan bread selection' },
-    { title: 'Organic Juice Set', price: 20, description: 'Fresh organic juices' }
-  ]
+  'air-conditioners': [
+    {
+      title: 'LG Split AC Unit',
+      description: 'Energy-efficient split air conditioner for home use.',
+      price: 600,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Daikin Inverter AC',
+      description: 'Advanced inverter air conditioner with smart features.',
+      price: 800,
+      condition: ListingCondition.LIKE_NEW,
+    },
+  ],
+  'water-heaters': [
+    {
+      title: 'Rheem Electric Water Heater',
+      description: '50-gallon electric water heater with energy efficiency.',
+      price: 350,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'A.O. Smith Gas Water Heater',
+      description: 'Natural gas water heater with quick recovery.',
+      price: 450,
+      condition: ListingCondition.GOOD,
+    },
+  ],
+  'audio-equipment': [
+    {
+      title: 'Bose Soundbar 700',
+      description:
+        'Premium soundbar with built-in Alexa and excellent sound quality.',
+      price: 500,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Sony Home Theater System',
+      description: '5.1 channel home theater system with subwoofer.',
+      price: 600,
+      condition: ListingCondition.LIKE_NEW,
+    },
+  ],
+  'e-books': [
+    {
+      title: 'Amazon Kindle Paperwhite',
+      description:
+        'Waterproof e-reader with built-in light and long battery life.',
+      price: 150,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Kobo Libra H2O',
+      description: 'Premium e-reader with physical page turn buttons.',
+      price: 200,
+      condition: ListingCondition.GOOD,
+    },
+  ],
+  'security-surveillance': [
+    {
+      title: 'Arlo Pro 3 Security Camera',
+      description: 'Wireless security camera with 2K video and night vision.',
+      price: 300,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Ring Video Doorbell Pro',
+      description:
+        'Smart video doorbell with motion detection and two-way talk.',
+      price: 250,
+      condition: ListingCondition.LIKE_NEW,
+    },
+  ],
+  'home-kitchen-appliances': [
+    {
+      title: 'KitchenAid Stand Mixer',
+      description: 'Professional stand mixer with multiple attachments.',
+      price: 350,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Ninja Food Processor',
+      description:
+        'Versatile food processor with multiple blades and functions.',
+      price: 120,
+      condition: ListingCondition.GOOD,
+    },
+  ],
+  'uncategorized-appliances': [
+    {
+      title: 'DeLonghi Coffee Maker',
+      description: 'Automatic coffee maker with programmable settings.',
+      price: 180,
+      condition: ListingCondition.EXCELLENT,
+    },
+    {
+      title: 'Breville Toaster Oven',
+      description: 'Convection toaster oven with multiple cooking functions.',
+      price: 220,
+      condition: ListingCondition.GOOD,
+    },
+  ],
 };
 
 async function main() {
   console.log('🌱 Starting comprehensive database seeding...');
 
-  // Create users
-  const user10Password = await argon2.hash('Squirrel.123');
-  const user11Password = await argon2.hash('Squirrel.123');
+  // Clear existing data
+  await prisma.listingAttribute.deleteMany();
+  await prisma.listingImage.deleteMany();
+  await prisma.listing.deleteMany();
+  await prisma.categoryAttribute.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
 
-  const user10 = await prisma.user.upsert({
-    where: { email: 'pratomoadhe+10@gmail.com' },
-    update: {},
-    create: {
-      email: 'pratomoadhe+10@gmail.com',
-      passwordHash: user10Password,
-      name: 'User10 test',
-      role: UserRole.USER,
+  // Create test users
+  const passwordHash = await bcrypt.hash('Superuser123', 10);
+  const adminPasswordHash = await bcrypt.hash('Adminuser123', 10);
+  const userPasswordHash = await bcrypt.hash('Testuser123', 10);
+
+  const superUser = await prisma.user.create({
+    data: {
+      email: 'pratomoadhe+20@gmail.com',
+      passwordHash,
+      name: 'Super User',
+      role: UserRole.SUPERUSER,
       emailVerified: true,
+      locationCountry: 'Syria',
+      locationCity: 'Damascus',
+      locationAddress: 'Damascus, Syria',
     },
   });
 
-  const user11 = await prisma.user.upsert({
-    where: { email: 'pratomoadhe+11@gmail.com' },
-    update: {},
-    create: {
-      email: 'pratomoadhe+11@gmail.com',
-      passwordHash: user11Password,
-      name: 'User11 test',
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'pratomoadhe+21@gmail.com',
+      passwordHash: adminPasswordHash,
+      name: 'Admin User',
+      role: UserRole.ADMIN,
+      emailVerified: true,
+      locationCountry: 'Syria',
+      locationCity: 'Aleppo',
+      locationAddress: 'Aleppo, Syria',
+    },
+  });
+
+  const user1 = await prisma.user.create({
+    data: {
+      email: 'pratomoadhe+22@gmail.com',
+      passwordHash: userPasswordHash,
+      name: 'Test User 1',
       role: UserRole.USER,
       emailVerified: true,
+      locationCountry: 'Syria',
+      locationCity: 'Homs',
+      locationAddress: 'Homs, Syria',
+    },
+  });
+
+  const user2 = await prisma.user.create({
+    data: {
+      email: 'pratomoadhe+23@gmail.com',
+      passwordHash: userPasswordHash,
+      name: 'Test User 2',
+      role: UserRole.USER,
+      emailVerified: true,
+      locationCountry: 'Syria',
+      locationCity: 'Latakia',
+      locationAddress: 'Latakia, Syria',
     },
   });
 
   console.log('✅ Users created successfully');
 
-  // New Categories from user
-  const newCategoryData = [
-      {
-        name: 'Real Estate',
-        subcategories: [
-          'Apartments',
-          'Houses',
-          'Land',
-          'Shops and offices',
-          'Factory and workshops',
-          'Tourist properties'
-        ]
-      },
-      {
-        name: 'Vehicles',
-        subcategories: [
-          'Cars',
-          'Motorcycles',
-          'Trucks and Commercial Vehicles',
-          'Agricultural and Industrial Vehicles',
-          'Marine Vehicles'
-        ]
-      },
-      {
-        name: 'Electronics',
-        subcategories: [
-          'Televisions',
-          'Refrigerators and Freezers',
-          'Washing Machines & Dryers',
-          'Ovens and Microwaves',
-          'Vacuum Cleaners',
-          'Cameras',
-          'Video Games',
-          'Air Conditioners',
-          'Water Heaters',
-          'Audio Equipment',
-          'E-Books',
-          'Security and Surveillance Systems',
-          'Home and Kitchen Appliances',
-          'Uncategorized Appliances'
-        ]
-      },
-      {
-        name: 'Furniture',
-        subcategories: [
-          'Bedrooms',
-          'Living Rooms',
-          'Dining Rooms',
-          'Kids\' Rooms',
-          'Guest Rooms',
-          'Office Furniture',
-          'Garden Furniture',
-          'Lighting and Décor'
-        ]
-      },
-      {
-        name: 'Phones and Accessories',
-        subcategories: [
-          'Mobile Phones',
-          'iPads',
-          'Smart Watches',
-          'Power bank',
-          'Mobile covers',
-          'Headphones',
-          'Chargers',
-          'Phone Numbers',
-          'Spare Parts'
-        ]
-      },
-      {
-        name: 'Computers and Accessories',
-        subcategories: [
-          'Laptops',
-          'Desktop Computers',
-          'Monitors',
-          'Mouses',
-          'Cameras',
-          'Keyboards',
-          'Printers and Scanners',
-          'Audio',
-          'Networks and Communications',
-          'Software',
-          'Computer Hardware',
-          'Gaming Consoles (PlayStation)'
-        ]
-      },
-      {
-        name: "Children's World",
-        subcategories: [
-          'Clothing & Shoes',
-          'Strollers',
-          'Car Seats',
-          'Toys',
-          'Books',
-          'Health and Care',
-          'Nutrition',
-          'Uncategorized'
-        ]
-      },
-      {
-        name: 'Clothing',
-        subcategories: [
-          'Men\'s Clothing',
-          'Women\'s Clothing',
-          'children\'s clothing',
-          'Bags',
-          'Watches and Jewelry',
-          'Other'
-        ]
-      },
-      {
-        name: 'Jobs',
-        subcategories: [
-          'Job Vacancies',
-          'searching for Job'
-        ]
-      },
-      {
-        name: 'Solar Energy',
-        subcategories: [
-          'Solar Panels',
-          'Inverters',
-          'Batteries',
-          'Charge Controllers',
-          'Cables and Accessories',
-          'Turnkey Systems',
-          'Services'
-        ]
-      },
-      {
-        name: 'Services and Businesses',
-        subcategories: [
-          'Home Services',
-          'Car Services',
-          'Business and Corporate Services',
-          'Technical Services',
-          'Education/Courses',
-          'Medical and Healthcare Services',
-          'Transportation and Logistics',
-          'Miscellaneous Services',
-          'Other'
-        ]
-      },
-      {
-        name: 'Handicrafts',
-        subcategories: [
-          'Textiles and Fabrics',
-          'Accessories and Jewelry',
-          'Wood Products',
-          'Pottery and Ceramics',
-          'Glass and Metals',
-          'Leatherware',
-          'Natural and healthy products'
-        ]
-      },
-      {
-        name: 'Building Materials',
-        subcategories: [
-          'Basic Materials',
-          'Cladding and Finishing Materials',
-          'Tools and Equipment',
-          'Wood and Wood Derivatives',
-          'Sanitary Ware and Plumbing',
-          'Electrical and Lighting',
-          'Glass and Aluminum'
-        ]
-      },
-      {
-        name: 'Industrial Equipment',
-        subcategories: [
-          'Workshop Equipment',
-          'Restaurant and Cafe Equipment',
-          'Bakery Equipment',
-          'Construction and Heavy Industry Equipment',
-          'Agricultural and Industrial Equipment',
-          'Production Lines',
-          'Industrial Safety Equipment',
-          'General Equipment',
-          'Spare Parts and Maintenance',
-          'Generators',
-          'Industrial Textile and Sewing Machines',
-          'Unclassified Equipment'
-        ]
-      },
-      {
-        name: 'Sports Equipment',
-        subcategories: [
-          'Bodybuilding and Fitness Equipment',
-          'Individual Sports Equipment',
-          'Martial Arts and Martial Arts Equipment',
-          'Outdoor Sports Equipment',
-          'Sports Accessories'
-        ]
-      },
-      {
-        name: 'Musical Equipment',
-        subcategories: [
-          'Stringed Instruments',
-          'Percussion Instruments',
-          'Wind Instruments',
-          'Keyboard Instruments',
-          'Recording Equipment',
-          'Accessories'
-        ]
-      },
-      {
-        name: 'Animals',
-        subcategories: [
-          'Pets',
-          'Farm Animals',
-          'Animal Supplies',
-          'Animal Services'
-        ]
-      },
-      {
-        name: 'Medical Supplies',
-        subcategories: [
-          'Medical Devices',
-          'Medical Instruments',
-          'Consumables Laboratory',
-          'Supplies Medical',
-          'Beds and Chairs'
-        ]
-      },
-      {
-        name: 'Foodstuffs',
-        subcategories: [
-          'Basic Ingredients',
-          'Oils and Fats',
-          'Canned Foods',
-          'Beverages',
-          'Dairy Products',
-          'Meat, Poultry, and Fish',
-          'Vegetables and Fruits',
-          'Unclassified Products'
-        ]
-      }
-    ];
-
-    const categories = newCategoryData.map(c => ({
-      name: c.name,
-      slug: slugify(c.name),
-      subcategories: c.subcategories.map(s => ({ name: s, slug: slugify(s) })),
-    }));
-
-
-  // Create all categories and subcategories
-  /*
-  const categories = [
-    {
-      name: 'Real Estate',
-      slug: 'real-estate',
-      subcategories: [
-        { name: 'Apartments', slug: 'apartments' },
-        { name: 'Houses', slug: 'houses' },
-        { name: 'Land', slug: 'land' },
-        { name: 'Shops and Offices', slug: 'shops-offices' },
-        { name: 'Factory and Workshops', slug: 'factory-workshops' },
-        { name: 'Tourist Properties', slug: 'tourist-properties' }
-      ]
-    },
-    {
-      name: 'Vehicles',
-      slug: 'vehicles',
-      subcategories: [
-        { name: 'Cars', slug: 'cars' },
-        { name: 'Motorcycles', slug: 'motorcycles' },
-        { name: 'Trucks and Commercial Vehicles', slug: 'trucks-commercial' },
-        { name: 'Agricultural and Industrial Vehicles', slug: 'agricultural-industrial' },
-        { name: 'Marine Vehicles', slug: 'marine-vehicles' }
-      ]
-    },
-    {
-      name: 'Electronics',
-      slug: 'electronics',
-      subcategories: [
-        { name: 'Televisions', slug: 'televisions' },
-        { name: 'Refrigerators and Freezers', slug: 'refrigerators-freezers' },
-        { name: 'Washing Machines & Dryers', slug: 'washing-machines-dryers' },
-        { name: 'Ovens and Microwaves', slug: 'ovens-microwaves' },
-        { name: 'Vacuum Cleaners', slug: 'vacuum-cleaners' },
-        { name: 'Cameras', slug: 'cameras' },
-        { name: 'Video Games', slug: 'video-games' },
-        { name: 'Air Conditioners', slug: 'air-conditioners' },
-        { name: 'Water Heaters', slug: 'water-heaters' },
-        { name: 'Audio Equipment', slug: 'audio-equipment' },
-        { name: 'E-Books', slug: 'e-books' },
-        { name: 'Security and Surveillance Systems', slug: 'security-surveillance' },
-        { name: 'Home and Kitchen Appliances', slug: 'home-kitchen-appliances' },
-        { name: 'Uncategorized Appliances', slug: 'uncategorized-appliances' }
-      ]
-    },
-    {
-      name: 'Furniture',
-      slug: 'furniture',
-      subcategories: [
-        { name: 'Bedrooms', slug: 'bedrooms' },
-        { name: 'Living Rooms', slug: 'living-rooms' },
-        { name: 'Dining Rooms', slug: 'dining-rooms' },
-        { name: 'Kids\' Rooms', slug: 'kids-rooms' },
-        { name: 'Guest Rooms', slug: 'guest-rooms' },
-        { name: 'Office Furniture', slug: 'office-furniture' },
-        { name: 'Garden Furniture', slug: 'garden-furniture' },
-        { name: 'Lighting and Decor', slug: 'lighting-decor' }
-      ]
-    },
-    {
-      name: 'Phones and Accessories',
-      slug: 'phones-accessories',
-      subcategories: [
-        { name: 'Mobile Phones', slug: 'mobile-phones' },
-        { name: 'iPads', slug: 'ipads' },
-        { name: 'Smart Watches', slug: 'smart-watches' },
-        { name: 'Power Bank', slug: 'power-bank' },
-        { name: 'Mobile Covers', slug: 'mobile-covers' },
-        { name: 'Headphones', slug: 'headphones' },
-        { name: 'Chargers', slug: 'chargers' },
-        { name: 'Phone Numbers', slug: 'phone-numbers' }
-      ]
-    },
-    {
-      name: 'Computers and Accessories',
-      slug: 'computers-accessories',
-      subcategories: [
-        { name: 'Laptops', slug: 'laptops' },
-        { name: 'Desktop Computers', slug: 'desktop-computers' },
-        { name: 'Monitors', slug: 'monitors' },
-        { name: 'Mouses', slug: 'mouses' },
-        { name: 'Cameras', slug: 'computer-cameras' },
-        { name: 'Keyboards', slug: 'keyboards' },
-        { name: 'Printers and Scanners', slug: 'printers-scanners' },
-        { name: 'Audio', slug: 'computer-audio' },
-        { name: 'Networks and Communications', slug: 'networks-communications' },
-        { name: 'Software', slug: 'software' },
-        { name: 'Computer Hardware', slug: 'computer-hardware' },
-        { name: 'Gaming Consoles (PlayStation)', slug: 'gaming-consoles' }
-      ]
-    },
-    {
-      name: "Children's World",
-      slug: 'childrens-world',
-      subcategories: [
-        { name: 'Clothing & Shoes', slug: 'clothing-shoes' },
-        { name: 'Strollers', slug: 'strollers' },
-        { name: 'Car Seats', slug: 'car-seats' },
-        { name: 'Toys', slug: 'toys' },
-        { name: 'Books', slug: 'books' },
-        { name: 'Health and Care', slug: 'health-care' },
-        { name: 'Nutrition', slug: 'nutrition' },
-        { name: 'Uncategorized', slug: 'children-uncategorized' }
-      ]
-    },
-    {
-      name: 'Clothing',
-      slug: 'clothing',
-      subcategories: [
-        { name: 'Men\'s Clothing', slug: 'mens-clothing' },
-        { name: 'Women\'s Clothing', slug: 'womens-clothing' },
-        { name: 'Children\'s Clothing', slug: 'childrens-clothing' },
-        { name: 'Bags', slug: 'bags' },
-        { name: 'Watches and Jewelry', slug: 'watches-jewelry' },
-        { name: 'Other', slug: 'clothing-other' }
-      ]
-    },
-    {
-      name: 'Jobs',
-      slug: 'jobs',
-      subcategories: [
-        { name: 'Job Vacancies', slug: 'job-vacancies' },
-        { name: 'Searching for Job', slug: 'searching-for-job' }
-      ]
-    },
-    {
-      name: 'Solar Energy',
-      slug: 'solar-energy',
-      subcategories: [
-        { name: 'Solar Panels', slug: 'solar-panels' },
-        { name: 'Inverters', slug: 'inverters' },
-        { name: 'Batteries', slug: 'batteries' },
-        { name: 'Charge Controllers', slug: 'charge-controllers' },
-        { name: 'Cables and Accessories', slug: 'cables-accessories' },
-        { name: 'Turnkey Systems', slug: 'turnkey-systems' },
-        { name: 'Services', slug: 'solar-services' }
-      ]
-    },
-    {
-      name: 'Services and Businesses',
-      slug: 'services-businesses',
-      subcategories: [
-        { name: 'Home Services', slug: 'home-services' },
-        { name: 'Car Services', slug: 'car-services' },
-        { name: 'Business and Corporate Services', slug: 'business-corporate-services' },
-        { name: 'Technical Services', slug: 'technical-services' },
-        { name: 'Education/Courses', slug: 'education-courses' },
-        { name: 'Medical and Healthcare Services', slug: 'medical-healthcare-services' },
-        { name: 'Transportation and Logistics', slug: 'transportation-logistics' },
-        { name: 'Miscellaneous Services', slug: 'miscellaneous-services' },
-        { name: 'Other', slug: 'services-other' }
-      ]
-    },
-    {
-      name: 'Handicrafts',
-      slug: 'handicrafts',
-      subcategories: [
-        { name: 'Textiles and Fabrics', slug: 'textiles-fabrics' },
-        { name: 'Accessories and Jewelry', slug: 'accessories-jewelry' },
-        { name: 'Wood Products', slug: 'wood-products' },
-        { name: 'Pottery and Ceramics', slug: 'pottery-ceramics' },
-        { name: 'Glass and Metals', slug: 'glass-metals' },
-        { name: 'Leatherware', slug: 'leatherware' },
-        { name: 'Natural and Healthy Products', slug: 'natural-healthy-products' }
-      ]
-    },
-    {
-      name: 'Building Materials',
-      slug: 'building-materials',
-      subcategories: [
-        { name: 'Cement and Concrete', slug: 'cement-concrete' },
-        { name: 'Steel and Metals', slug: 'steel-metals' },
-        { name: 'Bricks and Blocks', slug: 'bricks-blocks' },
-        { name: 'Tiles and Flooring', slug: 'tiles-flooring' },
-        { name: 'Paint and Coatings', slug: 'paint-coatings' },
-        { name: 'Plumbing and Electrical', slug: 'plumbing-electrical' },
-        { name: 'Insulation and Roofing', slug: 'insulation-roofing' }
-      ]
-    },
-    {
-      name: 'Industrial Equipment',
-      slug: 'industrial-equipment',
-      subcategories: [
-        { name: 'Manufacturing Equipment', slug: 'manufacturing-equipment' },
-        { name: 'Construction Equipment', slug: 'construction-equipment' },
-        { name: 'Generators and Power Equipment', slug: 'generators-power' },
-        { name: 'Compressors and Pumps', slug: 'compressors-pumps' },
-        { name: 'Welding Equipment', slug: 'welding-equipment' },
-        { name: 'Material Handling Equipment', slug: 'material-handling' },
-        { name: 'HVAC Equipment', slug: 'hvac-industrial' },
-        { name: 'Testing and Measurement', slug: 'testing-measurement' },
-        { name: 'Safety Equipment', slug: 'safety-equipment' },
-        { name: 'Packaging Equipment', slug: 'packaging-equipment' },
-        { name: 'Cleaning Equipment', slug: 'cleaning-equipment' },
-        { name: 'Other Industrial Equipment', slug: 'industrial-other' }
-      ]
-    },
-    {
-      name: 'Sports Equipment',
-      slug: 'sports-equipment',
-      subcategories: [
-        { name: 'Fitness Equipment', slug: 'fitness-equipment' },
-        { name: 'Team Sports', slug: 'team-sports' },
-        { name: 'Individual Sports', slug: 'individual-sports' },
-        { name: 'Outdoor Sports', slug: 'outdoor-sports' },
-        { name: 'Water Sports', slug: 'water-sports' }
-      ]
-    },
-    {
-      name: 'Musical Equipment',
-      slug: 'musical-equipment',
-      subcategories: [
-        { name: 'String Instruments', slug: 'string-instruments' },
-        { name: 'Wind Instruments', slug: 'wind-instruments' },
-        { name: 'Percussion Instruments', slug: 'percussion-instruments' },
-        { name: 'Keyboards and Pianos', slug: 'keyboards-pianos' },
-        { name: 'Amplifiers and Audio', slug: 'amplifiers-audio' },
-        { name: 'Music Accessories', slug: 'music-accessories' }
-      ]
-    },
-    {
-      name: 'Animals',
-      slug: 'animals',
-      subcategories: [
-        { name: 'Dogs', slug: 'dogs' },
-        { name: 'Cats', slug: 'cats' },
-        { name: 'Birds', slug: 'birds' },
-        { name: 'Other Animals', slug: 'other-animals' }
-      ]
-    },
-    {
-      name: 'Medical Supplies',
-      slug: 'medical-supplies',
-      subcategories: [
-        { name: 'Medical Equipment', slug: 'medical-equipment' },
-        { name: 'Personal Care', slug: 'personal-care' },
-        { name: 'Mobility Aids', slug: 'mobility-aids' },
-        { name: 'First Aid', slug: 'first-aid' },
-        { name: 'Pharmacy Supplies', slug: 'pharmacy-supplies' }
-      ]
-    },
-    {
-      name: 'Foodstuffs',
-      slug: 'foodstuffs',
-      subcategories: [
-        { name: 'Fresh Produce', slug: 'fresh-produce' },
-        { name: 'Meat and Seafood', slug: 'meat-seafood' },
-        { name: 'Dairy Products', slug: 'dairy-products' },
-        { name: 'Bakery Items', slug: 'bakery-items' },
-        { name: 'Beverages', slug: 'beverages' },
-        { name: 'Canned and Packaged Foods', slug: 'canned-packaged' },
-        { name: 'Spices and Condiments', slug: 'spices-condiments' },
-        { name: 'Organic and Specialty Foods', slug: 'organic-specialty' }
-      ]
-    }
-  ];
-  */
-
-  const createdCategories = new Map();
-  const createdSubcategories = new Map();
-
-  // Create main categories
-  for (const category of categories) {
-    const createdCategory = await prisma.category.upsert({
-      where: { slug: category.slug },
-      update: {},
-      create: {
-        name: category.name,
-        slug: category.slug,
-        path: category.slug,
+  // Create categories and subcategories
+  for (const categoryData of categoriesData) {
+    const category = await prisma.category.create({
+      data: {
+        name: categoryData.name,
+        slug: categoryData.id,
         depth: 0,
       },
     });
-    createdCategories.set(category.slug, createdCategory);
 
-    // Create subcategories
-    for (const subcategory of category.subcategories) {
-      const createdSubcategory = await prisma.category.upsert({
-        where: { slug: subcategory.slug },
-        update: {},
-        create: {
-          name: subcategory.name,
-          slug: subcategory.slug,
-          parentId: createdCategory.id,
-          path: `${category.slug}/${subcategory.slug}`,
+    for (const subcategoryData of categoryData.subcategories) {
+      await prisma.category.create({
+        data: {
+          name: subcategoryData.name,
+          slug: subcategoryData.id,
+          parentId: category.id,
           depth: 1,
+          path: `${category.id}/${subcategoryData.id}`,
         },
       });
-      createdSubcategories.set(subcategory.slug, createdSubcategory);
     }
   }
 
   console.log('✅ Categories and subcategories created successfully');
 
-  // Create category attributes
-  console.log('🏷️ Creating category attributes...');
-  await createCategoryAttributes(createdCategories, createdSubcategories);
-  console.log('✅ Category attributes created successfully');
+  // Create products for User 1 and User 2
+  const testUsers = [user1, user2];
+  let productCount = 0;
 
-  // Create products for each user
-  const users = [user10, user11];
-  let totalProducts = 0;
-
-  for (const user of users) {
+  for (const user of testUsers) {
     console.log(`📦 Creating products for ${user.name}...`);
-    
-    for (const [categorySlug, products] of Object.entries(productData)) {
-      const category = createdCategories.get(categorySlug);
-      if (!category) continue;
 
-      // Get subcategories for this category
-      const subcategories = Array.from(createdSubcategories.values())
-        .filter(sub => sub.parentId === category.id);
-
-      for (let i = 0; i < Math.min(products.length, 10); i++) {
-        const product = products[i];
-        const subcategory = subcategories[i % subcategories.length] || category;
-
-        const listing = await prisma.listing.create({
-          data: {
-            sellerId: user.id,
-            title: product.title,
-            description: product.description,
-            price: product.price,
-            currency: 'USD',
-            categoryId: subcategory.id,
-            city: 'Jakarta',
-            latitude: -6.2088,
-            longitude: 106.8456,
-            status: ListingStatus.ACTIVE,
-            isVip: Math.random() > 0.7,
-            isFeatured: Math.random() > 0.8,
-          },
+    for (const categoryData of categoriesData) {
+      for (const subcategoryData of categoryData.subcategories) {
+        const subcategory = await prisma.category.findFirst({
+          where: { slug: subcategoryData.id },
         });
 
-        // Add some sample images
-        await prisma.listingImage.createMany({
-          data: [
-            {
-              listingId: listing.id,
-              url: `https://picsum.photos/800/600?random=${listing.id}`,
-              position: 0,
-            },
-            {
-              listingId: listing.id,
-              url: `https://picsum.photos/800/600?random=${listing.id + 1}`,
-              position: 1,
-            },
-          ],
-        });
+        if (subcategory && productTemplates[subcategoryData.id]) {
+          const templates = productTemplates[subcategoryData.id];
+          if (templates && templates.length > 0) {
+            const template = templates[productCount % templates.length]; // Safe access
 
-        totalProducts++;
+            const listing = await prisma.listing.create({
+              data: {
+                sellerId: user.id,
+                title: template.title,
+                description: template.description,
+                price: template.price,
+                currency: 'SYP',
+                categoryId: subcategory.id,
+                city: user.locationCity,
+                locationCountry: 'Syria',
+                locationCity: user.locationCity,
+                locationAddress: user.locationAddress,
+                status: ListingStatus.ACTIVE,
+                condition: template.condition,
+                negotiable: NegotiableStatus.NEGOTIABLE,
+              },
+            });
+
+            // Add a sample image
+            await prisma.listingImage.create({
+              data: {
+                listingId: listing.id,
+                url: `https://via.placeholder.com/400x300/4F46E5/FFFFFF?text=${encodeURIComponent(subcategoryData.name)}`,
+                position: 0,
+              },
+            });
+
+            productCount++;
+          }
+        }
       }
     }
   }
 
   console.log('✅ Products created successfully');
+  console.log(`📦 Total products created: ${productCount}`);
 
-  // Create sample reviews for some listings
-  console.log('⭐ Creating sample reviews...');
-  const listings = await prisma.listing.findMany({
-    take: 20, // Get first 20 listings to add reviews to
-    select: { id: true, sellerId: true }
-  });
-
-  let totalReviews = 0;
-  for (const listing of listings) {
-    // Create 2-5 reviews per listing
-    const numReviews = Math.floor(Math.random() * 4) + 2;
-    
-    for (let i = 0; i < numReviews; i++) {
-      // Alternate between users for reviews
-      const reviewerId = i % 2 === 0 ? user10.id : user11.id;
-      
-      // Skip if reviewer is the same as seller
-      if (reviewerId === listing.sellerId) continue;
-      
-      const rating = Math.floor(Math.random() * 3) + 3; // 3-5 stars
-      const comments = [
-        'Great product, exactly as described!',
-        'Fast delivery and excellent condition.',
-        'Very satisfied with this purchase.',
-        'Good quality for the price.',
-        'Would recommend to others.',
-        'Seller was very responsive.',
-        'Item arrived on time and in perfect condition.',
-        'Excellent service and product quality.',
-        'Highly recommended seller!',
-        'Great communication throughout the process.'
-      ];
-      
-      await prisma.review.create({
-        data: {
-          listingId: listing.id,
-          reviewerId: reviewerId,
-          rating: rating,
-          comment: comments[Math.floor(Math.random() * comments.length)],
-        },
-      });
-      totalReviews++;
-    }
-  }
-
-  // Create sample view tracking data
-  console.log('👁️ Creating sample view tracking...');
-  let totalViews = 0;
-  for (const listing of listings) {
-    // Create 10-50 views per listing
-    const numViews = Math.floor(Math.random() * 41) + 10;
-    
-    for (let i = 0; i < numViews; i++) {
-      // Randomly assign some views to users, some anonymous
-      const viewerId = Math.random() > 0.3 ? (i % 2 === 0 ? user10.id : user11.id) : null;
-      
-      await prisma.listingView.create({
-        data: {
-          listingId: listing.id,
-          viewerId: viewerId,
-          ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-      });
-      totalViews++;
-    }
-  }
-
-  console.log('✅ Database seeding completed!');
-  console.log(`👤 User10: pratomoadhe+10@gmail.com / Squirrel.123`);
-  console.log(`👤 User11: pratomoadhe+11@gmail.com / Squirrel.123`);
-  console.log(`📦 Total products created: ${totalProducts}`);
-  console.log(`⭐ Total reviews created: ${totalReviews}`);
-  console.log(`👁️ Total views tracked: ${totalViews}`);
-  console.log(`📁 Categories created: ${categories.length} main categories with subcategories`);
+  console.log('🌱 Database seeding completed!');
+  console.log('👤 Super User:', superUser.email, '/ Superuser123');
+  console.log('👤 Admin User:', adminUser.email, '/ Adminuser123');
+  console.log('👤 User 1:', user1.email, '/ Testuser123');
+  console.log('👤 User 2:', user2.email, '/ Testuser123');
+  console.log(`📦 Total products created: ${productCount}`);
+  console.log(
+    `📁 Categories created: ${categoriesData.length} main categories with subcategories`,
+  );
 }
 
-main()
+// Execute main function
+void main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+    console.error(e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    void prisma.$disconnect();
   });
