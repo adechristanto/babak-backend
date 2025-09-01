@@ -219,138 +219,7 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
     }
   }
 
-  // Vehicle Attributes
-  const vehiclesCategory = createdCategories.get('vehicles');
-  if (vehiclesCategory) {
-    const vehicleAttributes = [
-      {
-        name: 'Vehicle Type',
-        key: 'vehicle_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['car', 'motorcycle', 'truck', 'commercial', 'agricultural', 'industrial', 'marine'],
-        displayOrder: 1
-      },
-      {
-        name: 'Make',
-        key: 'make',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'Vehicle make (e.g., Toyota, Honda)',
-        displayOrder: 2
-      },
-      {
-        name: 'Model',
-        key: 'model',
-        type: AttributeType.TEXT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        placeholder: 'Vehicle model',
-        displayOrder: 3
-      },
-      {
-        name: 'Year',
-        key: 'year',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: true,
-        searchable: true,
-        sortable: true,
-        validation: { min: 1900, max: new Date().getFullYear() + 2 },
-        placeholder: 'Manufacturing year',
-        displayOrder: 4
-      },
-      {
-        name: 'Mileage',
-        key: 'mileage',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: true,
-        searchable: true,
-        sortable: true,
-        unit: 'km',
-        validation: { min: 0, max: 1000000 },
-        placeholder: 'Vehicle mileage',
-        displayOrder: 5
-      },
-      {
-        name: 'Fuel Type',
-        key: 'fuel_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['petrol', 'diesel', 'hybrid', 'electric', 'lpg', 'cng'],
-        displayOrder: 6
-      },
-      {
-        name: 'Transmission',
-        key: 'transmission',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['manual', 'automatic', 'cvt', 'dct'],
-        displayOrder: 7
-      },
-      {
-        name: 'Body Type',
-        key: 'body_type',
-        type: AttributeType.SELECT,
-        dataType: AttributeDataType.STRING,
-        required: true,
-        searchable: true,
-        options: ['sedan', 'suv', 'hatchback', 'coupe', 'van', 'pickup', 'convertible', 'wagon'],
-        displayOrder: 8
-      },
-      {
-        name: 'Engine Power',
-        key: 'engine_power',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.INTEGER,
-        required: false,
-        searchable: true,
-        sortable: true,
-        unit: 'HP',
-        validation: { min: 1, max: 2000 },
-        placeholder: 'Engine power in HP',
-        displayOrder: 9
-      },
-      {
-        name: 'Engine Displacement',
-        key: 'engine_displacement',
-        type: AttributeType.NUMBER,
-        dataType: AttributeDataType.DECIMAL,
-        required: false,
-        searchable: true,
-        unit: 'L',
-        validation: { min: 0.1, max: 20 },
-        placeholder: 'Engine displacement in liters',
-        displayOrder: 10
-      }
-    ];
-
-    for (const attr of vehicleAttributes) {
-      await prisma.categoryAttribute.upsert({
-        where: {
-          categoryId_key: {
-            categoryId: vehiclesCategory.id,
-            key: attr.key
-          }
-        },
-        update: {},
-        create: {
-          categoryId: vehiclesCategory.id,
-          ...attr
-        }
-      });
-    }
-  }
+  // Vehicle attributes are now assigned to specific subcategories (e.g., cars)
 
   // Electronics Attributes (general + a few subcategory specifics)
   const electronicsCategory = createdCategories.get('electronics');
@@ -709,57 +578,55 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
   }
 
   // Vehicle subcategory-specific attributes
-  if (vehiclesCategory) {
-    const cars = createdSubcategories.get('cars');
-    if (cars) {
-      const carAttrs = [
-        { name: 'Drive Type', key: 'drive_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['fwd','rwd','awd','4x4'], displayOrder: 1 },
-        { name: 'Doors', key: 'doors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 6 }, displayOrder: 2 },
-        { name: 'Seats', key: 'seats', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 9 }, displayOrder: 3 },
-        { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
-        { name: 'Trim', key: 'trim', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 5 },
-      ];
-      for (const attr of carAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: cars.id, key: attr.key } },
-          update: {},
-          create: { categoryId: cars.id, ...attr },
-        });
-      }
+  const cars = createdSubcategories.get('cars');
+  if (cars) {
+    const carAttrs = [
+      { name: 'Drive Type', key: 'drive_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['fwd','rwd','awd','4x4'], displayOrder: 1 },
+      { name: 'Doors', key: 'doors', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 6 }, displayOrder: 2 },
+      { name: 'Seats', key: 'seats', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 2, max: 9 }, displayOrder: 3 },
+      { name: 'Color', key: 'color', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 4 },
+      { name: 'Trim', key: 'trim', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, displayOrder: 5 },
+    ];
+    for (const attr of carAttrs) {
+      await prisma.categoryAttribute.upsert({
+        where: { categoryId_key: { categoryId: cars.id, key: attr.key } },
+        update: {},
+        create: { categoryId: cars.id, ...attr },
+      });
     }
-    const trucks = createdSubcategories.get('trucks-and-commercial-vehicles');
-    if (trucks) {
-      const truckAttrs = [
-        { name: 'GVWR', key: 'gvwr', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'kg', validation: { min: 1000, max: 40000, decimalPlaces: 0 }, displayOrder: 1 },
-        { name: 'Payload', key: 'payload', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: 'kg', validation: { min: 0, max: 30000 }, displayOrder: 2 },
-        { name: 'Wheelbase', key: 'wheelbase', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: false, unit: 'mm', validation: { min: 2000, max: 8000 }, displayOrder: 3 },
-        { name: 'Axle Config', key: 'axle_config', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4x2','4x4','6x2','6x4','8x4'], displayOrder: 4 },
-        { name: 'Liftgate', key: 'liftgate', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
-      ];
-      for (const attr of truckAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: trucks.id, key: attr.key } },
-          update: {},
-          create: { categoryId: trucks.id, ...attr },
-        });
-      }
+  }
+  const trucks = createdSubcategories.get('trucks-commercial');
+  if (trucks) {
+    const truckAttrs = [
+      { name: 'GVWR', key: 'gvwr', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'kg', validation: { min: 1000, max: 40000, decimalPlaces: 0 }, displayOrder: 1 },
+      { name: 'Payload', key: 'payload', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, unit: 'kg', validation: { min: 0, max: 30000 }, displayOrder: 2 },
+      { name: 'Wheelbase', key: 'wheelbase', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: false, unit: 'mm', validation: { min: 2000, max: 8000 }, displayOrder: 3 },
+      { name: 'Axle Config', key: 'axle_config', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['4x2','4x4','6x2','6x4','8x4'], displayOrder: 4 },
+      { name: 'Liftgate', key: 'liftgate', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
+    ];
+    for (const attr of truckAttrs) {
+      await prisma.categoryAttribute.upsert({
+        where: { categoryId_key: { categoryId: trucks.id, key: attr.key } },
+        update: {},
+        create: { categoryId: trucks.id, ...attr },
+      });
     }
-    const marine = createdSubcategories.get('marine-vehicles');
-    if (marine) {
-      const marineAttrs = [
-        { name: 'Boat Type', key: 'boat_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['sailboat','motorboat','yacht','inflatable','other'], displayOrder: 1 },
-        { name: 'Length', key: 'boat_length', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'ft', validation: { min: 6, max: 200, decimalPlaces: 1 }, displayOrder: 2 },
-        { name: 'Engine Type', key: 'engine_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['inboard','outboard','jet'], displayOrder: 3 },
-        { name: 'Engine Hours', key: 'engine_hours', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 0, max: 20000 }, displayOrder: 4 },
-        { name: 'Trailer Included', key: 'trailer_included', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
-      ];
-      for (const attr of marineAttrs) {
-        await prisma.categoryAttribute.upsert({
-          where: { categoryId_key: { categoryId: marine.id, key: attr.key } },
-          update: {},
-          create: { categoryId: marine.id, ...attr },
-        });
-      }
+  }
+  const marine = createdSubcategories.get('marine-vehicles');
+  if (marine) {
+    const marineAttrs = [
+      { name: 'Boat Type', key: 'boat_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['sailboat','motorboat','yacht','inflatable','other'], displayOrder: 1 },
+      { name: 'Length', key: 'boat_length', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: false, searchable: true, unit: 'ft', validation: { min: 6, max: 200, decimalPlaces: 1 }, displayOrder: 2 },
+      { name: 'Engine Type', key: 'engine_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, options: ['inboard','outboard','jet'], displayOrder: 3 },
+      { name: 'Engine Hours', key: 'engine_hours', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, validation: { min: 0, max: 20000 }, displayOrder: 4 },
+      { name: 'Trailer Included', key: 'trailer_included', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, displayOrder: 5 },
+    ];
+    for (const attr of marineAttrs) {
+      await prisma.categoryAttribute.upsert({
+        where: { categoryId_key: { categoryId: marine.id, key: attr.key } },
+        update: {},
+        create: { categoryId: marine.id, ...attr },
+      });
     }
   }
 
@@ -814,6 +681,139 @@ async function createCategoryAttributes(createdCategories, createdSubcategories)
           create: { categoryId: land.id, ...attr },
         });
       }
+    }
+  }
+
+  // Vehicle Attributes - Assign to cars subcategory specifically
+  const carsSubcategory = createdSubcategories.get('cars');
+  if (carsSubcategory) {
+    const carAttributes = [
+      {
+        name: 'Vehicle Type',
+        key: 'vehicle_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        options: ['car', 'motorcycle', 'truck', 'commercial', 'agricultural', 'industrial', 'marine'],
+        displayOrder: 1
+      },
+      {
+        name: 'Make',
+        key: 'make',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        placeholder: 'Vehicle make (e.g., Toyota, Honda)',
+        displayOrder: 2
+      },
+      {
+        name: 'Model',
+        key: 'model',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        placeholder: 'Vehicle model',
+        displayOrder: 3
+      },
+      {
+        name: 'Year',
+        key: 'year',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        validation: { min: 1900, max: new Date().getFullYear() + 2 },
+        placeholder: 'Manufacturing year',
+        displayOrder: 4
+      },
+      {
+        name: 'Mileage',
+        key: 'mileage',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'km',
+        validation: { min: 0, max: 1000000 },
+        placeholder: 'Vehicle mileage',
+        displayOrder: 5
+      },
+      {
+        name: 'Fuel Type',
+        key: 'fuel_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        options: ['petrol', 'diesel', 'hybrid', 'electric', 'lpg', 'cng'],
+        displayOrder: 6
+      },
+      {
+        name: 'Transmission',
+        key: 'transmission',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        options: ['manual', 'automatic', 'cvt', 'dct'],
+        displayOrder: 7
+      },
+      {
+        name: 'Body Type',
+        key: 'body_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        options: ['sedan', 'suv', 'hatchback', 'coupe', 'van', 'pickup', 'convertible', 'wagon'],
+        displayOrder: 8
+      },
+      {
+        name: 'Engine Power',
+        key: 'engine_power',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'HP',
+        validation: { min: 1, max: 2000 },
+        placeholder: 'Engine power in HP',
+        displayOrder: 9
+      },
+      {
+        name: 'Engine Displacement',
+        key: 'engine_displacement',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.DECIMAL,
+        required: false,
+        searchable: true,
+        unit: 'L',
+        validation: { min: 0.1, max: 20 },
+        placeholder: 'Engine displacement in liters',
+        displayOrder: 10
+      }
+    ];
+
+    for (const attr of carAttributes) {
+      await prisma.categoryAttribute.upsert({
+        where: {
+          categoryId_key: {
+            categoryId: carsSubcategory.id,
+            key: attr.key
+          }
+        },
+        update: {},
+        create: {
+          categoryId: carsSubcategory.id,
+          ...attr
+        }
+      });
     }
   }
 }
