@@ -5,10 +5,12 @@ import { SearchListingsDto } from './dto/search-listings.dto';
 import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
 import { ListingAttributesService } from './listing-attributes.service';
+import { EmailService } from '../email/email.service';
 export declare class ListingsService {
     private readonly prisma;
     private readonly listingAttributesService;
-    constructor(prisma: PrismaService, listingAttributesService: ListingAttributesService);
+    private readonly emailService;
+    constructor(prisma: PrismaService, listingAttributesService: ListingAttributesService, emailService: EmailService);
     create(createListingDto: CreateListingDto, sellerId: number): Promise<ListingResponseDto>;
     findAll(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     findOne(id: number, viewerId?: number, ipAddress?: string, userAgent?: string): Promise<ListingResponseDto>;
@@ -19,7 +21,13 @@ export declare class ListingsService {
     findListingsByUser(userId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     update(id: number, updateListingDto: UpdateListingDto, userId: number): Promise<ListingResponseDto>;
     remove(id: number, userId: number): Promise<void>;
-    publish(id: number, userId: number): Promise<ListingResponseDto>;
+    submitForApproval(id: number, userId: number): Promise<ListingResponseDto>;
+    approve(id: number, adminId: number): Promise<ListingResponseDto>;
+    reject(id: number, adminId: number, reason?: string): Promise<ListingResponseDto>;
+    findPendingApproval(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
+    private notifyAdminsForApproval;
+    private notifySellerOfApproval;
+    private notifySellerOfRejection;
     extendExpiration(id: number, userId: number, days?: number): Promise<ListingResponseDto>;
     private mapToResponseDto;
 }

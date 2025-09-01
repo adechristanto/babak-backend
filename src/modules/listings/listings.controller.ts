@@ -28,6 +28,7 @@ import { ListingResponseDto } from './dto/listing-response.dto';
 import { PaginatedListingsDto } from './dto/paginated-listings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @ApiTags('Listings')
 @Controller('listings')
@@ -136,18 +137,62 @@ export class ListingsController {
 
   @Post(':id/publish')
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Publish a draft listing' })
-  @ApiResponse({ status: 200, description: 'Listing published successfully', type: ListingResponseDto })
+  @ApiOperation({ summary: 'Submit a draft listing for admin approval' })
+  @ApiResponse({ status: 200, description: 'Listing submitted for approval successfully', type: ListingResponseDto })
   @ApiResponse({ status: 404, description: 'Listing not found' })
-  @ApiResponse({ status: 403, description: 'You can only publish your own listings' })
-  @ApiResponse({ status: 400, description: 'Only draft listings can be published' })
+  @ApiResponse({ status: 403, description: 'You can only submit your own listings' })
+  @ApiResponse({ status: 400, description: 'Only draft listings can be submitted' })
   @ApiParam({ name: 'id', description: 'Listing ID' })
   @ApiBearerAuth()
   async publish(
     @Param('id', ParseIntPipe) id: number,
     @Request() req: any,
   ): Promise<ListingResponseDto> {
-    return this.listingsService.publish(id, req.user.id);
+    return this.listingsService.submitForApproval(id, req.user.id);
+  }
+
+  @Post(':id/approve')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Approve a pending listing (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Listing approved successfully', type: ListingResponseDto })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  @ApiResponse({ status: 403, description: 'Only admins can approve listings' })
+  @ApiResponse({ status: 400, description: 'Only pending listings can be approved' })
+  @ApiParam({ name: 'id', description: 'Listing ID' })
+  @ApiBearerAuth()
+  async approve(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+  ): Promise<ListingResponseDto> {
+    return this.listingsService.approve(id, req.user.id);
+  }
+
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Reject a pending listing (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Listing rejected successfully', type: ListingResponseDto })
+  @ApiResponse({ status: 404, description: 'Listing not found' })
+  @ApiResponse({ status: 403, description: 'Only admins can reject listings' })
+  @ApiResponse({ status: 400, description: 'Only pending listings can be rejected' })
+  @ApiParam({ name: 'id', description: 'Listing ID' })
+  @ApiBearerAuth()
+  async reject(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { reason?: string },
+    @Request() req: any,
+  ): Promise<ListingResponseDto> {
+    return this.listingsService.reject(id, req.user.id, body.reason);
+  }
+
+  @Get('pending-approval')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiOperation({ summary: 'Get all pending approval listings (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Pending listings retrieved successfully', type: PaginatedListingsDto })
+  @ApiBearerAuth()
+  async getPendingApproval(
+    @Query() searchDto: SearchListingsDto,
+  ): Promise<PaginatedListingsDto> {
+    return this.listingsService.findPendingApproval(searchDto);
   }
 
   @Post(':id/extend')

@@ -18,12 +18,13 @@ const listing_attributes_service_1 = require("./listing-attributes.service");
 const uploads_module_1 = require("../uploads/uploads.module");
 const auth_module_1 = require("../auth/auth.module");
 const users_module_1 = require("../users/users.module");
+const email_module_1 = require("../email/email.module");
 let ListingsModule = class ListingsModule {
 };
 exports.ListingsModule = ListingsModule;
 exports.ListingsModule = ListingsModule = __decorate([
     (0, common_1.Module)({
-        imports: [uploads_module_1.UploadsModule, auth_module_1.AuthModule, users_module_1.UsersModule],
+        imports: [uploads_module_1.UploadsModule, auth_module_1.AuthModule, users_module_1.UsersModule, email_module_1.EmailModule],
         controllers: [listings_controller_1.ListingsController, listing_images_controller_1.ListingImagesController, listing_upgrades_controller_1.ListingUpgradesController],
         providers: [listings_service_1.ListingsService, listing_images_service_1.ListingImagesService, listing_upgrades_service_1.ListingUpgradesService, listing_attributes_service_1.ListingAttributesService],
         exports: [listings_service_1.ListingsService, listing_images_service_1.ListingImagesService, listing_upgrades_service_1.ListingUpgradesService, listing_attributes_service_1.ListingAttributesService],

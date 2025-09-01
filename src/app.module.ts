@@ -19,6 +19,7 @@ import { HealthModule } from './modules/health/health.module';
 import { OffersModule } from './modules/offers/offers.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { AdminModule } from './modules/admin/admin.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 
@@ -80,6 +81,7 @@ import { validate } from './config/env.validation';
     OffersModule,
     AnalyticsModule,
     SettingsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

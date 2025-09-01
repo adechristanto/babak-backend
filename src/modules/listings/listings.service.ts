@@ -9,12 +9,14 @@ import { PaginatedListingsDto, PaginationMetaDto } from './dto/paginated-listing
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { CategoryResponseDto } from '../categories/dto/category-response.dto';
 import { ListingAttributesService } from './listing-attributes.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class ListingsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly listingAttributesService: ListingAttributesService
+    private readonly listingAttributesService: ListingAttributesService,
+    private readonly emailService: EmailService
   ) {}
 
   async create(createListingDto: CreateListingDto, sellerId: number): Promise<ListingResponseDto> {
@@ -88,9 +90,15 @@ export class ListingsService {
     } = searchDto;
 
     // Build where clause
-    const where: Prisma.ListingWhereInput = {
-      status: status || ListingStatus.ACTIVE,
-    };
+    const where: Prisma.ListingWhereInput = {};
+    
+    // Only filter by status if explicitly provided, otherwise show all statuses
+    if (status !== undefined) {
+      where.status = status;
+    } else {
+      // For user's own listings, show DRAFT, PENDING, ACTIVE, and REJECTED
+      where.status = { in: [ListingStatus.DRAFT, ListingStatus.PENDING, ListingStatus.ACTIVE, ListingStatus.REJECTED] };
+    }
 
     // Text search
     if (q) {
@@ -355,7 +363,8 @@ export class ListingsService {
   }
 
   async findMyListings(sellerId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
-    return this.findAll({ ...searchDto, sellerId });
+    // For user's own listings, show both DRAFT and ACTIVE statuses
+    return this.findAll({ ...searchDto, sellerId, status: undefined });
   }
 
   async findListingsByUser(userId: number, searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
@@ -446,9 +455,16 @@ export class ListingsService {
     });
   }
 
-  async publish(id: number, userId: number): Promise<ListingResponseDto> {
+  async submitForApproval(id: number, userId: number): Promise<ListingResponseDto> {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
     });
 
     if (!listing) {
@@ -456,11 +472,49 @@ export class ListingsService {
     }
 
     if (listing.sellerId !== userId) {
-      throw new ForbiddenException('You can only publish your own listings');
+      throw new ForbiddenException('You can only submit your own listings');
     }
 
     if (listing.status !== ListingStatus.DRAFT) {
-      throw new BadRequestException('Only draft listings can be published');
+      throw new BadRequestException('Only draft listings can be submitted for approval');
+    }
+
+    const updatedListing = await this.prisma.listing.update({
+      where: { id },
+      data: { status: ListingStatus.PENDING },
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
+
+    // Send email notifications to all admins
+    await this.notifyAdminsForApproval(updatedListing);
+
+    return await this.mapToResponseDto(updatedListing);
+  }
+
+  async approve(id: number, _adminId: number): Promise<ListingResponseDto> {
+    const listing = await this.prisma.listing.findUnique({
+      where: { id },
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
+
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    if (listing.status !== ListingStatus.PENDING) {
+      throw new BadRequestException('Only pending listings can be approved');
     }
 
     const updatedListing = await this.prisma.listing.update({
@@ -475,7 +529,152 @@ export class ListingsService {
       },
     });
 
+    // Send email notification to seller
+    await this.notifySellerOfApproval(updatedListing);
+
     return await this.mapToResponseDto(updatedListing);
+  }
+
+  async reject(id: number, _adminId: number, reason?: string): Promise<ListingResponseDto> {
+    const listing = await this.prisma.listing.findUnique({
+      where: { id },
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
+
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    if (listing.status !== ListingStatus.PENDING) {
+      throw new BadRequestException('Only pending listings can be rejected');
+    }
+
+    const updatedListing = await this.prisma.listing.update({
+      where: { id },
+      data: { status: ListingStatus.REJECTED },
+      include: {
+        seller: true,
+        category: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
+
+    // Send email notification to seller
+    await this.notifySellerOfRejection(updatedListing, reason);
+
+    return await this.mapToResponseDto(updatedListing);
+  }
+
+  async findPendingApproval(searchDto: SearchListingsDto): Promise<PaginatedListingsDto> {
+    return this.findAll({ ...searchDto, status: ListingStatus.PENDING });
+  }
+
+  private async notifyAdminsForApproval(listing: any): Promise<void> {
+    try {
+      // Get all admin users
+      const admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: ['ADMIN', 'SUPERUSER'] },
+          emailVerified: true,
+        },
+      });
+
+      // Send email to each admin
+      for (const admin of admins) {
+        await this.emailService.sendEmail({
+          to: admin.email,
+          subject: 'New Listing Pending Approval',
+          html: `
+            <h2>New Listing Pending Approval</h2>
+            <p>A new listing has been submitted and requires your approval.</p>
+            <h3>Listing Details:</h3>
+            <ul>
+              <li><strong>Title:</strong> ${listing.title}</li>
+              <li><strong>Seller:</strong> ${listing.seller.name || listing.seller.email}</li>
+              <li><strong>Category:</strong> ${listing.category?.name || 'Uncategorized'}</li>
+              <li><strong>Price:</strong> ${listing.price} ${listing.currency}</li>
+              <li><strong>Submitted:</strong> ${new Date(listing.updatedAt).toLocaleString()}</li>
+            </ul>
+            <p>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/listings/${listing.id}/review" 
+                 style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Review Listing
+              </a>
+            </p>
+            <p>Please review this listing and approve or reject it.</p>
+          `,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to notify admins:', error);
+    }
+  }
+
+  private async notifySellerOfApproval(listing: any): Promise<void> {
+    try {
+      await this.emailService.sendEmail({
+        to: listing.seller.email,
+        subject: 'Your Listing Has Been Approved!',
+        html: `
+          <h2>Congratulations! Your Listing Has Been Approved</h2>
+          <p>Your listing "${listing.title}" has been approved and is now live on our platform.</p>
+          <h3>Listing Details:</h3>
+          <ul>
+            <li><strong>Title:</strong> ${listing.title}</li>
+            <li><strong>Category:</strong> ${listing.category?.name || 'Uncategorized'}</li>
+            <li><strong>Price:</strong> ${listing.price} ${listing.currency}</li>
+            <li><strong>Approved:</strong> ${new Date(listing.updatedAt).toLocaleString()}</li>
+          </ul>
+          <p>
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/p/${listing.id}" 
+               style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+              View Your Listing
+            </a>
+          </p>
+          <p>Your listing is now visible to potential buyers. Good luck with your sale!</p>
+        `,
+      });
+    } catch (error) {
+      console.error('Failed to notify seller of approval:', error);
+    }
+  }
+
+  private async notifySellerOfRejection(listing: any, reason?: string): Promise<void> {
+    try {
+      await this.emailService.sendEmail({
+        to: listing.seller.email,
+        subject: 'Your Listing Has Been Rejected',
+        html: `
+          <h2>Your Listing Has Been Rejected</h2>
+          <p>We're sorry, but your listing "${listing.title}" has been rejected and will not be published.</p>
+          <h3>Listing Details:</h3>
+          <ul>
+            <li><strong>Title:</strong> ${listing.title}</li>
+            <li><strong>Category:</strong> ${listing.category?.name || 'Uncategorized'}</li>
+            <li><strong>Price:</strong> ${listing.price} ${listing.currency}</li>
+            <li><strong>Rejected:</strong> ${new Date(listing.updatedAt).toLocaleString()}</li>
+          </ul>
+          ${reason ? `<h3>Reason for Rejection:</h3><p>${reason}</p>` : ''}
+          <p>
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-ads" 
+               style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+              View My Listings
+            </a>
+          </p>
+          <p>You can edit your listing and submit it again for approval, or contact support if you have any questions.</p>
+        `,
+      });
+    } catch (error) {
+      console.error('Failed to notify seller of rejection:', error);
+    }
   }
 
   async extendExpiration(id: number, userId: number, days: number = 30): Promise<ListingResponseDto> {

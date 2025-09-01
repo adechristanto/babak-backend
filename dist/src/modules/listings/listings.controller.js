@@ -24,6 +24,7 @@ const listing_response_dto_1 = require("./dto/listing-response.dto");
 const paginated_listings_dto_1 = require("./dto/paginated-listings.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const email_verified_guard_1 = require("../auth/guards/email-verified.guard");
+const admin_guard_1 = require("../auth/guards/admin.guard");
 let ListingsController = class ListingsController {
     listingsService;
     constructor(listingsService) {
@@ -58,7 +59,16 @@ let ListingsController = class ListingsController {
         return { message: 'Listing deleted successfully' };
     }
     async publish(id, req) {
-        return this.listingsService.publish(id, req.user.id);
+        return this.listingsService.submitForApproval(id, req.user.id);
+    }
+    async approve(id, req) {
+        return this.listingsService.approve(id, req.user.id);
+    }
+    async reject(id, body, req) {
+        return this.listingsService.reject(id, req.user.id, body.reason);
+    }
+    async getPendingApproval(searchDto) {
+        return this.listingsService.findPendingApproval(searchDto);
     }
     async extendExpiration(id, days = 30, req) {
         return this.listingsService.extendExpiration(id, req.user.id, days);
@@ -173,11 +183,11 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':id/publish'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),
-    (0, swagger_1.ApiOperation)({ summary: 'Publish a draft listing' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Listing published successfully', type: listing_response_dto_1.ListingResponseDto }),
+    (0, swagger_1.ApiOperation)({ summary: 'Submit a draft listing for admin approval' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Listing submitted for approval successfully', type: listing_response_dto_1.ListingResponseDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: 'You can only publish your own listings' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Only draft listings can be published' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'You can only submit your own listings' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Only draft listings can be submitted' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
     (0, swagger_1.ApiBearerAuth)(),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
@@ -186,6 +196,50 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], ListingsController.prototype, "publish", null);
+__decorate([
+    (0, common_1.Post)(':id/approve'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Approve a pending listing (Admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Listing approved successfully', type: listing_response_dto_1.ListingResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Only admins can approve listings' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Only pending listings can be approved' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "approve", null);
+__decorate([
+    (0, common_1.Post)(':id/reject'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Reject a pending listing (Admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Listing rejected successfully', type: listing_response_dto_1.ListingResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Listing not found' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Only admins can reject listings' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Only pending listings can be rejected' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Listing ID' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object, Object]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "reject", null);
+__decorate([
+    (0, common_1.Get)('pending-approval'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all pending approval listings (Admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Pending listings retrieved successfully', type: paginated_listings_dto_1.PaginatedListingsDto }),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [search_listings_dto_1.SearchListingsDto]),
+    __metadata("design:returntype", Promise)
+], ListingsController.prototype, "getPendingApproval", null);
 __decorate([
     (0, common_1.Post)(':id/extend'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, email_verified_guard_1.EmailVerifiedGuard),

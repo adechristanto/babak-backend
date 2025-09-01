@@ -9,9 +9,10 @@ import { ListingAttributesService } from './listing-attributes.service';
 import { UploadsModule } from '../uploads/uploads.module';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [UploadsModule, AuthModule, UsersModule],
+  imports: [UploadsModule, AuthModule, UsersModule, EmailModule],
   controllers: [ListingsController, ListingImagesController, ListingUpgradesController],
   providers: [ListingsService, ListingImagesService, ListingUpgradesService, ListingAttributesService],
   exports: [ListingsService, ListingImagesService, ListingUpgradesService, ListingAttributesService],

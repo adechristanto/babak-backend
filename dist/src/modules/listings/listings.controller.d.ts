@@ -19,6 +19,11 @@ export declare class ListingsController {
         message: string;
     }>;
     publish(id: number, req: any): Promise<ListingResponseDto>;
+    approve(id: number, req: any): Promise<ListingResponseDto>;
+    reject(id: number, body: {
+        reason?: string;
+    }, req: any): Promise<ListingResponseDto>;
+    getPendingApproval(searchDto: SearchListingsDto): Promise<PaginatedListingsDto>;
     extendExpiration(id: number, days: number | undefined, req: any): Promise<ListingResponseDto>;
     getViewCount(id: number): Promise<{
         viewCount: number;

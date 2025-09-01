@@ -31,6 +31,7 @@ const health_module_1 = require("./modules/health/health.module");
 const offers_module_1 = require("./modules/offers/offers.module");
 const analytics_module_1 = require("./modules/analytics/analytics.module");
 const settings_module_1 = require("./modules/settings/settings.module");
+const admin_module_1 = require("./modules/admin/admin.module");
 const configuration_1 = __importDefault(require("./config/configuration"));
 const env_validation_1 = require("./config/env.validation");
 let AppModule = class AppModule {
@@ -86,6 +87,7 @@ exports.AppModule = AppModule = __decorate([
             offers_module_1.OffersModule,
             analytics_module_1.AnalyticsModule,
             settings_module_1.SettingsModule,
+            admin_module_1.AdminModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

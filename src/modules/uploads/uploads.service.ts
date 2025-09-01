@@ -1,7 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
-import * as crypto from 'crypto';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export interface PresignedUrlResponse {
   uploadUrl: string;
@@ -17,19 +18,50 @@ export interface FileValidationOptions {
 }
 
 @Injectable()
-export class UploadsService {
+export class UploadsService implements OnModuleInit {
+  private readonly s3Client: S3Client;
   private readonly bucket: string;
   private readonly region: string;
-  private readonly accessKey: string;
-  private readonly secretKey: string;
   private readonly endpoint: string;
 
   constructor(private readonly configService: ConfigService) {
     this.bucket = this.configService.get<string>('storage.bucket') || 'babak-uploads';
     this.region = this.configService.get<string>('storage.region') || 'us-east-1';
-    this.accessKey = this.configService.get<string>('storage.accessKey') || '';
-    this.secretKey = this.configService.get<string>('storage.secretKey') || '';
-    this.endpoint = this.configService.get<string>('storage.endpoint') || '';
+    this.endpoint = this.configService.get<string>('storage.endpoint') || 'http://localhost:9000';
+    
+    const accessKey = this.configService.get<string>('storage.accessKey') || 'minioadmin';
+    const secretKey = this.configService.get<string>('storage.secretKey') || 'minioadmin';
+
+    this.s3Client = new S3Client({
+      region: this.region,
+      endpoint: this.endpoint,
+      credentials: {
+        accessKeyId: accessKey,
+        secretAccessKey: secretKey,
+      },
+      forcePathStyle: true, // Required for MinIO
+    });
+  }
+
+  async onModuleInit() {
+    await this.ensureBucketExists();
+  }
+
+  private async ensureBucketExists(): Promise<void> {
+    try {
+      // Check if bucket exists
+      await this.s3Client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      console.log(`✅ Bucket '${this.bucket}' already exists`);
+    } catch (error) {
+      // Bucket doesn't exist, create it
+      try {
+        await this.s3Client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+        console.log(`✅ Created bucket '${this.bucket}'`);
+      } catch (_createError) {
+        console.error(`❌ Failed to create bucket '${this.bucket}':`, _createError);
+        throw _createError;
+      }
+    }
   }
 
   async generatePresignedUploadUrl(
@@ -38,7 +70,7 @@ export class UploadsService {
     folder: string = 'uploads',
     options: FileValidationOptions = {},
   ): Promise<PresignedUrlResponse> {
-    // Validate file
+    
     this.validateFile(fileName, contentType, options);
 
     // Generate unique key
@@ -46,28 +78,75 @@ export class UploadsService {
     const uniqueFileName = `${uuidv4()}${fileExtension}`;
     const key = `${folder}/${uniqueFileName}`;
 
-    // For development, we'll create a mock presigned URL
-    // In production, you would integrate with AWS S3 or MinIO
-    const uploadUrl = this.generateMockPresignedUrl(key, contentType);
+    // Create presigned URL for upload
+    const putObjectCommand = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      ContentType: contentType,
+    });
+
+    const uploadUrl = await getSignedUrl(this.s3Client, putObjectCommand, {
+      expiresIn: 3600, // 1 hour
+    });
+
     const fileUrl = `${this.endpoint}/${this.bucket}/${key}`;
 
     return {
       uploadUrl,
       fileUrl,
       key,
-      expiresIn: 3600, // 1 hour
+      expiresIn: 3600,
     };
   }
 
   async generatePresignedDownloadUrl(key: string, expiresIn: number = 3600): Promise<string> {
-    // For development, return direct URL
-    // In production, generate actual presigned URL
-    return `${this.endpoint}/${this.bucket}/${key}`;
+    const getObjectCommand = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    return await getSignedUrl(this.s3Client, getObjectCommand, {
+      expiresIn,
+    });
   }
 
   async deleteFile(key: string): Promise<void> {
-    // In production, implement actual S3/MinIO deletion
-    console.log(`Would delete file: ${key}`);
+    const deleteObjectCommand = new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    await this.s3Client.send(deleteObjectCommand);
+  }
+
+  async uploadFile(file: Express.Multer.File, folder: string = 'uploads'): Promise<PresignedUrlResponse> {
+    // Validate file
+    this.validateImageFile(file.originalname, file.mimetype);
+    
+    // Generate unique filename
+    const fileExtension = this.getFileExtension(file.originalname);
+    const uniqueFileName = `${uuidv4()}${fileExtension}`;
+    const key = `${folder}/${uniqueFileName}`;
+    
+    // Upload file to S3/MinIO
+    const putObjectCommand = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
+
+    await this.s3Client.send(putObjectCommand);
+    
+    // Generate file URL
+    const fileUrl = `${this.endpoint}/${this.bucket}/${key}`;
+    
+    return {
+      uploadUrl: '', // Not needed for direct upload
+      fileUrl,
+      key,
+      expiresIn: 0, // Not needed for direct upload
+    };
   }
 
   private validateFile(
@@ -111,18 +190,6 @@ export class UploadsService {
     return lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : '';
   }
 
-  private generateMockPresignedUrl(key: string, contentType: string): string {
-    // This is a mock implementation for development
-    // In production, you would use AWS SDK or MinIO client to generate actual presigned URLs
-    const timestamp = Date.now();
-    const signature = crypto
-      .createHmac('sha256', this.secretKey)
-      .update(`${key}${timestamp}`)
-      .digest('hex');
-
-    return `${this.endpoint}/${this.bucket}/${key}?timestamp=${timestamp}&signature=${signature}&content-type=${encodeURIComponent(contentType)}`;
-  }
-
   // Helper method to get optimized image URLs (for future CDN integration)
   getOptimizedImageUrl(
     key: string,
@@ -148,8 +215,8 @@ export class UploadsService {
   validateImageFile(
     fileName: string,
     contentType: string,
-    maxWidth: number = 2048,
-    maxHeight: number = 2048,
+    _maxWidth: number = 2048,
+    _maxHeight: number = 2048,
   ): void {
     this.validateFile(fileName, contentType, {
       maxSize: 5 * 1024 * 1024, // 5MB for images
@@ -158,6 +225,5 @@ export class UploadsService {
     });
 
     // Additional image-specific validations would go here
-    // In a real implementation, you might check actual image dimensions
   }
 }
