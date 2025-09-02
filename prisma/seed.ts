@@ -2869,6 +2869,213 @@ const productTemplates: Record<
   ],
 };
 
+// Function to add comprehensive attributes to listings based on category
+async function addListingAttributes(listingId: number, subcategorySlug: string, categoryId: number) {
+  // Get all attributes for this category
+  const categoryAttributes = await prisma.categoryAttribute.findMany({
+    where: { categoryId },
+    orderBy: { displayOrder: 'asc' }
+  });
+
+  // Generate realistic attribute values based on subcategory
+  for (const attr of categoryAttributes) {
+    let value: string;
+    let numericValue: number | null = null;
+
+    // Generate values based on attribute key and type
+    switch (attr.key) {
+      // Real Estate attributes
+      case 'property_type':
+        value = getRandomFromArray(['Apartment', 'House', 'Villa', 'Studio']);
+        break;
+      case 'listing_type':
+        value = getRandomFromArray(['For Sale', 'For Rent']);
+        break;
+      case 'bedrooms':
+        numericValue = getRandomNumber(1, 5);
+        value = String(numericValue);
+        break;
+      case 'bathrooms':
+        numericValue = getRandomNumber(1, 4);
+        value = String(numericValue);
+        break;
+      case 'area_sqm':
+        numericValue = getRandomNumber(50, 300);
+        value = String(numericValue);
+        break;
+      case 'year_built':
+        numericValue = getRandomNumber(1990, 2023);
+        value = String(numericValue);
+        break;
+      case 'furnishing':
+        value = getRandomFromArray(['Unfurnished', 'Semi-Furnished', 'Fully Furnished']);
+        break;
+      case 'parking':
+        value = getRandomFromArray(['Garage', 'Covered', 'Street', 'None']);
+        break;
+      case 'elevator':
+        value = getRandomFromArray(['Yes', 'No']);
+        break;
+      case 'balcony':
+        value = getRandomFromArray(['Yes', 'No']);
+        break;
+
+      // Vehicle attributes
+      case 'make':
+        if (subcategorySlug === 'cars') {
+          value = getRandomFromArray(['Toyota', 'Hyundai', 'Kia', 'Nissan', 'Honda', 'Chevrolet']);
+        } else if (subcategorySlug === 'motorcycles') {
+          value = getRandomFromArray(['Honda', 'Yamaha', 'Suzuki', 'Kawasaki']);
+        } else {
+          value = getRandomFromArray(['Isuzu', 'Mitsubishi', 'Ford', 'Mercedes']);
+        }
+        break;
+      case 'model':
+        value = getRandomFromArray(['Model A', 'Model B', 'Model C', 'Model D']);
+        break;
+      case 'year':
+        numericValue = getRandomNumber(2010, 2023);
+        value = String(numericValue);
+        break;
+      case 'mileage':
+        numericValue = getRandomNumber(10000, 150000);
+        value = String(numericValue);
+        break;
+      case 'fuel_type':
+        value = getRandomFromArray(['Gasoline', 'Diesel', 'Electric', 'Hybrid']);
+        break;
+      case 'transmission':
+        value = getRandomFromArray(['Automatic', 'Manual']);
+        break;
+      case 'color':
+        value = getRandomFromArray(['White', 'Black', 'Silver', 'Blue', 'Red', 'Gray']);
+        break;
+      case 'body_type':
+        value = getRandomFromArray(['Sedan', 'SUV', 'Hatchback', 'Coupe', 'Wagon']);
+        break;
+      case 'engine_size':
+        numericValue = getRandomNumber(1000, 4000);
+        value = String(numericValue);
+        break;
+
+      // Electronics attributes
+      case 'brand':
+        if (subcategorySlug.includes('tv') || subcategorySlug.includes('television')) {
+          value = getRandomFromArray(['Samsung', 'LG', 'Sony', 'TCL', 'Hisense']);
+        } else if (subcategorySlug.includes('phone') || subcategorySlug.includes('mobile')) {
+          value = getRandomFromArray(['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'OnePlus']);
+        } else if (subcategorySlug.includes('laptop') || subcategorySlug.includes('computer')) {
+          value = getRandomFromArray(['Dell', 'HP', 'Lenovo', 'Apple', 'Asus']);
+        } else {
+          value = getRandomFromArray(['Samsung', 'LG', 'Sony', 'Panasonic', 'Bosch']);
+        }
+        break;
+      case 'screen_size':
+        numericValue = getRandomNumber(32, 75);
+        value = String(numericValue);
+        break;
+      case 'resolution':
+        value = getRandomFromArray(['Full HD', '4K', '8K', 'HD']);
+        break;
+      case 'smart_tv':
+        value = getRandomFromArray(['Yes', 'No']);
+        break;
+      case 'storage_gb':
+        numericValue = getRandomFromArray([64, 128, 256, 512, 1024]);
+        value = String(numericValue);
+        break;
+      case 'ram_gb':
+        numericValue = getRandomFromArray([4, 8, 16, 32]);
+        value = String(numericValue);
+        break;
+      case 'processor':
+        value = getRandomFromArray(['Intel Core i5', 'Intel Core i7', 'AMD Ryzen 5', 'AMD Ryzen 7', 'Apple M2']);
+        break;
+
+      // Furniture attributes
+      case 'material':
+        if (subcategorySlug.includes('furniture') || subcategorySlug.includes('bedroom') || subcategorySlug.includes('living')) {
+          value = getRandomFromArray(['Wood', 'Metal', 'Fabric', 'Leather', 'Glass']);
+        } else {
+          value = getRandomFromArray(['Cotton', 'Wool', 'Silk', 'Polyester']);
+        }
+        break;
+      case 'dimensions':
+        value = `${getRandomNumber(100, 300)}x${getRandomNumber(50, 200)}x${getRandomNumber(70, 120)} cm`;
+        break;
+      case 'style':
+        value = getRandomFromArray(['Modern', 'Traditional', 'Contemporary', 'Vintage', 'Minimalist']);
+        break;
+      case 'seats':
+        numericValue = getRandomNumber(2, 8);
+        value = String(numericValue);
+        break;
+
+      // Default cases for common attributes
+      case 'condition':
+        value = getRandomFromArray(['Excellent', 'Good', 'Fair', 'Like New']);
+        break;
+      case 'age':
+        numericValue = getRandomNumber(0, 10);
+        value = String(numericValue);
+        break;
+      case 'warranty':
+        value = getRandomFromArray(['Yes', 'No']);
+        break;
+      case 'size':
+        value = getRandomFromArray(['XS', 'S', 'M', 'L', 'XL', 'XXL']);
+        break;
+      case 'weight':
+        numericValue = getRandomNumber(1, 100);
+        value = String(numericValue);
+        break;
+      case 'power':
+        numericValue = getRandomNumber(100, 2000);
+        value = String(numericValue);
+        break;
+      case 'capacity':
+        numericValue = getRandomNumber(10, 500);
+        value = String(numericValue);
+        break;
+      default:
+        // Generate generic values based on attribute type
+        if (attr.type === AttributeType.SELECT && attr.options) {
+          const options = Array.isArray(attr.options) ? attr.options : JSON.parse(attr.options as string);
+          value = getRandomFromArray(options);
+        } else if (attr.type === AttributeType.NUMBER) {
+          numericValue = getRandomNumber(1, 1000);
+          value = String(numericValue);
+        } else if (attr.type === AttributeType.BOOLEAN) {
+          value = getRandomFromArray(['Yes', 'No']);
+        } else {
+          value = `Sample ${attr.name}`;
+        }
+    }
+
+    // Ensure value is always a string
+    const stringValue = typeof value === 'string' ? value : String(value);
+
+    // Create the listing attribute
+    await prisma.listingAttribute.create({
+      data: {
+        listingId,
+        attributeId: attr.id,
+        value: stringValue,
+        numericValue,
+      },
+    });
+  }
+}
+
+// Helper functions
+function getRandomFromArray<T>(array: T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function getRandomNumber(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 async function main() {
   console.log('🌱 Starting comprehensive database seeding...');
 
@@ -3135,8 +3342,8 @@ async function main() {
           searchable: attr.searchable,
           sortable: attr.sortable,
           options: attr.options,
-          unit: attr.unit,
-          placeholder: attr.placeholder,
+          ...((attr as any).unit && { unit: (attr as any).unit }),
+          ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
           displayOrder: attr.displayOrder,
         },
       });
@@ -3304,8 +3511,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -3603,22 +3810,32 @@ async function main() {
       ];
 
       for (const attr of electronicsAttributes) {
-        await prisma.categoryAttribute.create({
-          data: {
+        // Check if attribute already exists for this category
+        const existingAttribute = await prisma.categoryAttribute.findFirst({
+          where: {
             categoryId: subcategory.id,
-            name: attr.name,
             key: attr.key,
-            type: attr.type,
-            dataType: attr.dataType,
-            required: attr.required,
-            searchable: attr.searchable,
-            sortable: attr.sortable,
-            options: attr.options,
-            unit: attr.unit || undefined,
-            placeholder: attr.placeholder || undefined,
-            displayOrder: attr.displayOrder,
           },
         });
+
+        if (!existingAttribute) {
+          await prisma.categoryAttribute.create({
+            data: {
+              categoryId: subcategory.id,
+              name: attr.name,
+              key: attr.key,
+              type: attr.type,
+              dataType: attr.dataType,
+              required: attr.required,
+              searchable: attr.searchable,
+              sortable: attr.sortable,
+              options: attr.options,
+              unit: attr.unit || undefined,
+              placeholder: attr.placeholder || undefined,
+              displayOrder: attr.displayOrder,
+            },
+          });
+        }
       }
     }
   }
@@ -3672,6 +3889,9 @@ async function main() {
                 position: 0,
               },
             });
+
+            // Add comprehensive attributes based on category
+            await addListingAttributes(listing.id, subcategoryData.id, subcategory.id);
 
             productCount++;
           }
@@ -3944,8 +4164,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4113,8 +4333,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4201,8 +4421,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4289,8 +4509,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4386,8 +4606,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4468,8 +4688,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4614,8 +4834,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4703,8 +4923,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4790,8 +5010,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4877,8 +5097,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -4964,8 +5184,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -5052,8 +5272,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -5128,22 +5348,32 @@ async function main() {
       ];
 
       for (const attr of booksMediaAttributes) {
-        await prisma.categoryAttribute.create({
-          data: {
+        // Check if attribute already exists for this category
+        const existingAttribute = await prisma.categoryAttribute.findFirst({
+          where: {
             categoryId: subcategory.id,
-            name: attr.name,
             key: attr.key,
-            type: attr.type,
-            dataType: attr.dataType,
-            required: attr.required,
-            searchable: attr.searchable,
-            sortable: attr.sortable,
-            options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
-            displayOrder: attr.displayOrder,
           },
         });
+
+        if (!existingAttribute) {
+          await prisma.categoryAttribute.create({
+            data: {
+              categoryId: subcategory.id,
+              name: attr.name,
+              key: attr.key,
+              type: attr.type,
+              dataType: attr.dataType,
+              required: attr.required,
+              searchable: attr.searchable,
+              sortable: attr.sortable,
+              options: attr.options,
+              ...((attr as any).unit && { unit: (attr as any).unit }),
+              ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+              displayOrder: attr.displayOrder,
+            },
+          });
+        }
       }
     }
   }
@@ -5226,8 +5456,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -5313,8 +5543,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });
@@ -5402,8 +5632,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
             displayOrder: attr.displayOrder,
           },
         });

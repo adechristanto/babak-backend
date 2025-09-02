@@ -87,6 +87,14 @@ export class ListingsController {
     return this.listingsService.findListingsByUser(userId, searchDto);
   }
 
+  @Get('category/:categoryId/attributes')
+  @ApiOperation({ summary: 'Get filterable attributes for a category' })
+  @ApiParam({ name: 'categoryId', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Category attributes retrieved successfully' })
+  async getCategoryAttributes(@Param('categoryId', ParseIntPipe) categoryId: number) {
+    return this.listingsService.getCategoryAttributes(categoryId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get listing by ID' })
   @ApiResponse({ status: 200, description: 'Listing retrieved successfully', type: ListingResponseDto })
@@ -99,7 +107,7 @@ export class ListingsController {
     const viewerId = req.user?.id;
     const ipAddress = req.ip || req.connection?.remoteAddress;
     const userAgent = req.headers['user-agent'];
-    
+
     return this.listingsService.findOne(id, viewerId, ipAddress, userAgent);
   }
 

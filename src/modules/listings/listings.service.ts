@@ -327,6 +327,38 @@ export class ListingsService {
     return new PaginatedListingsDto(listingDtos, meta);
   }
 
+  async getCategoryAttributes(categoryId: number) {
+    const attributes = await this.prisma.categoryAttribute.findMany({
+      where: {
+        categoryId,
+        searchable: true // Only return searchable attributes for filtering
+      },
+      orderBy: { displayOrder: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        key: true,
+        type: true,
+        dataType: true,
+        required: true,
+        searchable: true,
+        sortable: true,
+        options: true,
+        unit: true,
+        placeholder: true,
+        displayOrder: true,
+      },
+    });
+
+    return {
+      categoryId,
+      attributes: attributes.map(attr => ({
+        ...attr,
+        options: attr.options ? (Array.isArray(attr.options) ? attr.options : JSON.parse(attr.options as string)) : null,
+      })),
+    };
+  }
+
   async findOne(id: number, viewerId?: number, ipAddress?: string, userAgent?: string): Promise<ListingResponseDto> {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
