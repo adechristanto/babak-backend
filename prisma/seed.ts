@@ -3321,6 +3321,16 @@ async function main() {
     'refrigerators-freezers',
     'washing-machines-dryers',
     'ovens-microwaves',
+    'vacuum-cleaners',
+    'cameras',
+    'video-games',
+    'air-conditioners',
+    'water-heaters',
+    'audio-equipment',
+    'e-books',
+    'security-surveillance',
+    'home-kitchen-appliances',
+    'uncategorized-appliances',
   ];
 
   for (const subcategorySlug of electronicsSubcategories) {
@@ -3339,6 +3349,7 @@ async function main() {
           searchable: true,
           sortable: false,
           placeholder: 'Brand name (e.g., Samsung, LG, Apple)',
+          unit: undefined,
           displayOrder: 1,
         },
         {
@@ -3352,35 +3363,181 @@ async function main() {
           placeholder: 'Model name or number',
           displayOrder: 2,
         },
-        {
+        // Screen Size for TVs
+        ...(subcategorySlug === 'televisions' ? [{
           name: 'Screen Size',
           key: 'screen_size',
           type: AttributeType.NUMBER,
           dataType: AttributeDataType.INTEGER,
-          required: subcategorySlug === 'televisions',
+          required: true,
           searchable: true,
           sortable: true,
           unit: 'inch',
           placeholder: 'Screen size in inches',
           displayOrder: 3,
-        },
-        {
+        }] : []),
+        // Capacity for appliances
+        ...(subcategorySlug === 'refrigerators-freezers' || subcategorySlug === 'washing-machines-dryers' ? [{
           name: 'Capacity',
           key: 'capacity',
           type: AttributeType.NUMBER,
           dataType: AttributeDataType.INTEGER,
-          required:
-            subcategorySlug === 'refrigerators-freezers' ||
-            subcategorySlug === 'washing-machines-dryers',
+          required: true,
           searchable: true,
           sortable: true,
           unit: subcategorySlug === 'refrigerators-freezers' ? 'L' : 'kg',
-          placeholder:
-            subcategorySlug === 'refrigerators-freezers'
-              ? 'Capacity in liters'
-              : 'Capacity in kilograms',
-          displayOrder: 4,
-        },
+          placeholder: subcategorySlug === 'refrigerators-freezers' ? 'Capacity in liters' : 'Capacity in kilograms',
+          displayOrder: 3,
+        }] : []),
+        // Camera-specific attributes
+        ...(subcategorySlug === 'cameras' ? [
+          {
+            name: 'Camera Type',
+            key: 'camera_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Camera', 'Film Camera', 'Other'],
+            unit: undefined,
+            placeholder: undefined,
+            displayOrder: 3,
+          },
+          {
+            name: 'Megapixels',
+            key: 'megapixels',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: false,
+            searchable: true,
+            sortable: true,
+            unit: 'MP',
+            placeholder: 'Camera resolution in megapixels',
+            displayOrder: 4,
+          },
+          {
+            name: 'Lens Mount',
+            key: 'lens_mount',
+            type: AttributeType.TEXT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            placeholder: 'Lens mount type (e.g., Canon EF, Nikon F, Sony E)',
+            unit: undefined,
+            displayOrder: 5,
+          }
+        ] : []),
+        // Video Game-specific attributes
+        ...(subcategorySlug === 'video-games' ? [
+          {
+            name: 'Platform',
+            key: 'platform',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['PlayStation', 'Xbox', 'Nintendo', 'PC', 'Mobile', 'Other'],
+            unit: undefined,
+            placeholder: undefined,
+            displayOrder: 3,
+          },
+          {
+            name: 'Game Type',
+            key: 'game_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            options: ['Action', 'Adventure', 'RPG', 'Strategy', 'Sports', 'Racing', 'Puzzle', 'Other'],
+            displayOrder: 4,
+          }
+        ] : []),
+        // Audio Equipment-specific attributes
+        ...(subcategorySlug === 'audio-equipment' ? [
+          {
+            name: 'Audio Type',
+            key: 'audio_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['Speakers', 'Headphones', 'Microphone', 'Amplifier', 'Receiver', 'Other'],
+            displayOrder: 3,
+          },
+          {
+            name: 'Power Output',
+            key: 'power_output',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: false,
+            searchable: true,
+            sortable: true,
+            unit: 'W',
+            placeholder: 'Power output in watts',
+            displayOrder: 4,
+          }
+        ] : []),
+        // Security Systems-specific attributes
+        ...(subcategorySlug === 'security-surveillance' ? [
+          {
+            name: 'System Type',
+            key: 'system_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['CCTV Camera', 'Security System', 'Alarm System', 'Access Control', 'Other'],
+            displayOrder: 3,
+          },
+          {
+            name: 'Resolution',
+            key: 'resolution',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            options: ['720p', '1080p', '2K', '4K', 'Other'],
+            displayOrder: 4,
+          }
+        ] : []),
+        // Air Conditioner-specific attributes
+        ...(subcategorySlug === 'air-conditioners' ? [
+          {
+            name: 'Cooling Capacity',
+            key: 'cooling_capacity',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'BTU',
+            placeholder: 'Cooling capacity in BTU',
+            displayOrder: 3,
+          }
+        ] : []),
+        // Water Heater-specific attributes
+        ...(subcategorySlug === 'water-heaters' ? [
+          {
+            name: 'Capacity',
+            key: 'capacity',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'L',
+            placeholder: 'Water heater capacity in liters',
+            displayOrder: 3,
+          }
+        ] : []),
+        // Common color attribute for all
         {
           name: 'Color',
           key: 'color',
@@ -3398,8 +3555,51 @@ async function main() {
             'Blue',
             'Other',
           ],
-          displayOrder: 5,
+          unit: undefined,
+          placeholder: undefined,
+          displayOrder: subcategorySlug === 'cameras' || subcategorySlug === 'video-games' || subcategorySlug === 'audio-equipment' || subcategorySlug === 'security-surveillance' ? 6 : 5,
         },
+        // Camera-specific attributes
+        ...(subcategorySlug === 'cameras' ? [
+          {
+            name: 'Camera Type',
+            key: 'camera_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Camera', 'Film Camera', 'Other'],
+            unit: undefined,
+            placeholder: undefined,
+            displayOrder: 3,
+          },
+          {
+            name: 'Megapixels',
+            key: 'megapixels',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'MP',
+            placeholder: 'Camera resolution in megapixels',
+            displayOrder: 4,
+          },
+          {
+            name: 'Lens Mount',
+            key: 'lens_mount',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            options: ['Canon EF', 'Nikon F', 'Sony E', 'Micro Four Thirds', 'Other'],
+            unit: undefined,
+            placeholder: undefined,
+            displayOrder: 5,
+          }
+        ] : []),
       ];
 
       for (const attr of electronicsAttributes) {
@@ -3414,8 +3614,8 @@ async function main() {
             searchable: attr.searchable,
             sortable: attr.sortable,
             options: attr.options,
-            unit: attr.unit,
-            placeholder: attr.placeholder,
+            unit: attr.unit || undefined,
+            placeholder: attr.placeholder || undefined,
             displayOrder: attr.displayOrder,
           },
         });
@@ -3596,6 +3796,1621 @@ async function main() {
     }
   }
   console.log('✅ Industrial equipment attributes created successfully');
+
+  // Create attributes for Phones and Accessories
+  console.log('📱 Creating phones and accessories attributes...');
+  const phonesSubcategories = [
+    'mobile-phones',
+    'ipads',
+    'smart-watches',
+    'power-bank',
+    'mobile-covers',
+    'headphones',
+    'chargers',
+    'phone-numbers',
+  ];
+
+  for (const subcategorySlug of phonesSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const phonesAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name (e.g., Apple, Samsung, Huawei)',
+          displayOrder: 1,
+        },
+        {
+          name: 'Model',
+          key: 'model',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Model name or number',
+          displayOrder: 2,
+        },
+        // Mobile Phone-specific attributes
+        ...(subcategorySlug === 'mobile-phones' ? [
+          {
+            name: 'Storage',
+            key: 'storage',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: true,
+            options: ['16GB', '32GB', '64GB', '128GB', '256GB', '512GB', '1TB', 'Other'],
+            displayOrder: 3,
+          },
+          {
+            name: 'Color',
+            key: 'color',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            options: ['Black', 'White', 'Gold', 'Silver', 'Blue', 'Red', 'Green', 'Other'],
+            displayOrder: 4,
+          }
+        ] : []),
+        // Smart Watch-specific attributes
+        ...(subcategorySlug === 'smart-watches' ? [
+          {
+            name: 'Watch Type',
+            key: 'watch_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['Fitness Tracker', 'Smartwatch', 'Hybrid', 'Other'],
+            displayOrder: 3,
+          },
+          {
+            name: 'Compatibility',
+            key: 'compatibility',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['iOS', 'Android', 'Both', 'Other'],
+            displayOrder: 4,
+          }
+        ] : []),
+        // Power Bank-specific attributes
+        ...(subcategorySlug === 'power-bank' ? [
+          {
+            name: 'Capacity',
+            key: 'capacity',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'mAh',
+            placeholder: 'Battery capacity in mAh',
+            displayOrder: 3,
+          }
+        ] : []),
+        // Headphones-specific attributes
+        ...(subcategorySlug === 'headphones' ? [
+          {
+            name: 'Headphone Type',
+            key: 'headphone_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['Over-ear', 'On-ear', 'In-ear', 'Wireless', 'Other'],
+            displayOrder: 3,
+          }
+        ] : []),
+        // Common condition attribute
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: subcategorySlug === 'mobile-phones' || subcategorySlug === 'smart-watches' ? 5 : 3,
+        },
+      ];
+
+      for (const attr of phonesAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Phones and accessories attributes created successfully');
+
+  // Create attributes for Computers and Accessories
+  console.log('💻 Creating computers and accessories attributes...');
+  const computersSubcategories = [
+    'laptops',
+    'desktop-computers',
+    'monitors',
+    'mouses',
+    'computer-cameras',
+    'keyboards',
+    'printers-scanners',
+    'computer-audio',
+    'networks-communications',
+    'software',
+    'computer-hardware',
+    'gaming-consoles',
+  ];
+
+  for (const subcategorySlug of computersSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const computersAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name (e.g., Dell, HP, Lenovo)',
+          displayOrder: 1,
+        },
+        {
+          name: 'Model',
+          key: 'model',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Model name or number',
+          displayOrder: 2,
+        },
+        // Laptop-specific attributes
+        ...(subcategorySlug === 'laptops' ? [
+          {
+            name: 'Processor',
+            key: 'processor',
+            type: AttributeType.TEXT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            placeholder: 'Processor model (e.g., Intel i7, AMD Ryzen)',
+            displayOrder: 3,
+          },
+          {
+            name: 'RAM',
+            key: 'ram',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: true,
+            options: ['4GB', '8GB', '16GB', '32GB', '64GB', 'Other'],
+            displayOrder: 4,
+          },
+          {
+            name: 'Storage',
+            key: 'storage',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: true,
+            options: ['128GB', '256GB', '512GB', '1TB', '2TB', 'Other'],
+            displayOrder: 5,
+          }
+        ] : []),
+        // Monitor-specific attributes
+        ...(subcategorySlug === 'monitors' ? [
+          {
+            name: 'Screen Size',
+            key: 'screen_size',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'inch',
+            placeholder: 'Screen size in inches',
+            displayOrder: 3,
+          },
+          {
+            name: 'Resolution',
+            key: 'resolution',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['720p', '1080p', '2K', '4K', 'Other'],
+            displayOrder: 4,
+          }
+        ] : []),
+        // Gaming Console-specific attributes
+        ...(subcategorySlug === 'gaming-consoles' ? [
+          {
+            name: 'Console Type',
+            key: 'console_type',
+            type: AttributeType.SELECT,
+            dataType: AttributeDataType.STRING,
+            required: true,
+            searchable: true,
+            sortable: false,
+            options: ['PlayStation', 'Xbox', 'Nintendo', 'Other'],
+            displayOrder: 3,
+          },
+          {
+            name: 'Generation',
+            key: 'generation',
+            type: AttributeType.TEXT,
+            dataType: AttributeDataType.STRING,
+            required: false,
+            searchable: true,
+            sortable: false,
+            placeholder: 'Console generation (e.g., PS5, Xbox Series X)',
+            displayOrder: 4,
+          }
+        ] : []),
+        // Common condition attribute
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: subcategorySlug === 'laptops' ? 6 : (subcategorySlug === 'monitors' || subcategorySlug === 'gaming-consoles' ? 5 : 3),
+        },
+      ];
+
+      for (const attr of computersAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Computers and accessories attributes created successfully');
+
+  // Create attributes for Furniture
+  console.log('🪑 Creating furniture attributes...');
+  const furnitureSubcategories = [
+    'bedrooms',
+    'living-rooms',
+    'dining-rooms',
+    'kids-rooms',
+    'guest-rooms',
+    'office-furniture',
+    'garden-furniture',
+    'lighting-decor',
+  ];
+
+  for (const subcategorySlug of furnitureSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const furnitureAttributes = [
+        {
+          name: 'Material',
+          key: 'material',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['Wood', 'Metal', 'Plastic', 'Fabric', 'Leather', 'Glass', 'Other'],
+          displayOrder: 1,
+        },
+        {
+          name: 'Color',
+          key: 'color',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Brown', 'Black', 'White', 'Gray', 'Beige', 'Blue', 'Red', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Style',
+          key: 'style',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Modern', 'Traditional', 'Contemporary', 'Vintage', 'Industrial', 'Minimalist', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of furnitureAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Furniture attributes created successfully');
+
+  // Create attributes for Children's World
+  console.log('🧸 Creating children\'s world attributes...');
+  const childrenSubcategories = [
+    'clothing-shoes',
+    'strollers',
+    'car-seats',
+    'toys',
+    'books',
+    'health-care',
+    'nutrition',
+    'children-uncategorized',
+  ];
+
+  for (const subcategorySlug of childrenSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const childrenAttributes = [
+        {
+          name: 'Age Range',
+          key: 'age_range',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['0-6 months', '6-12 months', '1-2 years', '2-4 years', '4-6 years', '6-8 years', '8-12 years', '12+ years'],
+          displayOrder: 1,
+        },
+        {
+          name: 'Gender',
+          key: 'gender',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Boys', 'Girls', 'Unisex', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of childrenAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Children\'s world attributes created successfully');
+
+  // Create attributes for Clothing
+  console.log('👔 Creating clothing attributes...');
+  const clothingSubcategories = [
+    'mens-clothing',
+    'womens-clothing',
+    'childrens-clothing',
+    'bags',
+    'watches-jewelry',
+    'clothing-other',
+  ];
+
+  for (const subcategorySlug of clothingSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const clothingAttributes = [
+        {
+          name: 'Size',
+          key: 'size',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'Other'],
+          displayOrder: 1,
+        },
+        {
+          name: 'Color',
+          key: 'color',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Brown', 'Gray', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Material',
+          key: 'material',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Cotton', 'Polyester', 'Wool', 'Silk', 'Leather', 'Denim', 'Linen', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 4,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 5,
+        },
+      ];
+
+      for (const attr of clothingAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Clothing attributes created successfully');
+
+  // Create attributes for Jobs
+  console.log('💼 Creating jobs attributes...');
+  const jobsSubcategories = [
+    'job-vacancies',
+    'searching-for-job',
+  ];
+
+  for (const subcategorySlug of jobsSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const jobsAttributes = [
+        {
+          name: 'Job Type',
+          key: 'job_type',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship', 'Other'],
+          displayOrder: 1,
+        },
+        {
+          name: 'Experience Level',
+          key: 'experience_level',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Entry Level', 'Mid Level', 'Senior Level', 'Executive', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Education',
+          key: 'education',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['High School', 'Associate', 'Bachelor', 'Master', 'PhD', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Salary Range',
+          key: 'salary_range',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Under $30k', '$30k-$50k', '$50k-$75k', '$75k-$100k', '$100k-$150k', '$150k+', 'Negotiable'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of jobsAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Jobs attributes created successfully');
+
+  // Create attributes for Solar Energy
+  console.log('☀️ Creating solar energy attributes...');
+  const solarSubcategories = [
+    'solar-panels',
+    'inverters',
+    'batteries',
+    'charge-controllers',
+    'cables-accessories',
+    'turnkey-systems',
+    'solar-services',
+  ];
+
+  for (const subcategorySlug of solarSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const solarAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Model',
+          key: 'model',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Model name or number',
+          displayOrder: 2,
+        },
+        // Solar Panel-specific attributes
+        ...(subcategorySlug === 'solar-panels' ? [
+          {
+            name: 'Power Output',
+            key: 'power_output',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'W',
+            placeholder: 'Power output in watts',
+            displayOrder: 3,
+          },
+          {
+            name: 'Efficiency',
+            key: 'efficiency',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.DECIMAL,
+            required: false,
+            searchable: true,
+            sortable: true,
+            unit: '%',
+            placeholder: 'Panel efficiency percentage',
+            displayOrder: 4,
+          }
+        ] : []),
+        // Battery-specific attributes
+        ...(subcategorySlug === 'batteries' ? [
+          {
+            name: 'Capacity',
+            key: 'capacity',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'kWh',
+            placeholder: 'Battery capacity in kWh',
+            displayOrder: 3,
+          },
+          {
+            name: 'Voltage',
+            key: 'voltage',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'V',
+            placeholder: 'Battery voltage',
+            displayOrder: 4,
+          }
+        ] : []),
+        // Inverter-specific attributes
+        ...(subcategorySlug === 'inverters' ? [
+          {
+            name: 'Power Rating',
+            key: 'power_rating',
+            type: AttributeType.NUMBER,
+            dataType: AttributeDataType.INTEGER,
+            required: true,
+            searchable: true,
+            sortable: true,
+            unit: 'W',
+            placeholder: 'Inverter power rating in watts',
+            displayOrder: 3,
+          }
+        ] : []),
+        // Common condition attribute
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: subcategorySlug === 'solar-panels' || subcategorySlug === 'batteries' ? 5 : (subcategorySlug === 'inverters' ? 4 : 3),
+        },
+      ];
+
+      for (const attr of solarAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Solar energy attributes created successfully');
+
+  // Create attributes for Services and Businesses
+  console.log('🔧 Creating services and businesses attributes...');
+  const servicesSubcategories = [
+    'home-services',
+    'car-services',
+    'business-corporate-services',
+    'technical-services',
+    'education-courses',
+    'medical-healthcare-services',
+    'transportation-logistics',
+    'miscellaneous-services',
+    'services-other',
+  ];
+
+  for (const subcategorySlug of servicesSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const servicesAttributes = [
+        {
+          name: 'Service Type',
+          key: 'service_type',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Type of service offered',
+          displayOrder: 1,
+        },
+        {
+          name: 'Experience',
+          key: 'experience',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Less than 1 year', '1-3 years', '3-5 years', '5-10 years', '10+ years'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Certification',
+          key: 'certification',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Yes', 'No', 'In Progress'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Service Area',
+          key: 'service_area',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Areas where service is provided',
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of servicesAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Services and businesses attributes created successfully');
+
+  // Create attributes for Handicrafts
+  console.log('🎨 Creating handicrafts attributes...');
+  const handicraftsSubcategories = [
+    'textiles-fabrics',
+    'accessories-jewelry',
+    'wood-products',
+    'pottery-ceramics',
+    'glass-metals',
+    'leatherware',
+    'natural-healthy-products',
+  ];
+
+  for (const subcategorySlug of handicraftsSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const handicraftsAttributes = [
+        {
+          name: 'Material',
+          key: 'material',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['Cotton', 'Wool', 'Silk', 'Wood', 'Clay', 'Glass', 'Metal', 'Leather', 'Other'],
+          displayOrder: 1,
+        },
+        {
+          name: 'Style',
+          key: 'style',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Traditional', 'Modern', 'Vintage', 'Contemporary', 'Ethnic', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Color',
+          key: 'color',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Natural', 'Dyed', 'Multi-color', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of handicraftsAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Handicrafts attributes created successfully');
+
+  // Create attributes for Building Materials
+  console.log('🧱 Creating building materials attributes...');
+  const buildingMaterialsSubcategories = [
+    'cement-concrete',
+    'steel-metals',
+    'bricks-blocks',
+    'tiles-flooring',
+    'paint-coatings',
+    'plumbing-electrical',
+    'building-other',
+  ];
+
+  for (const subcategorySlug of buildingMaterialsSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const buildingMaterialsAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Grade',
+          key: 'grade',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Premium', 'Standard', 'Economy', 'Other'],
+          displayOrder: 2,
+        },
+        {
+          name: 'Quantity',
+          key: 'quantity',
+          type: AttributeType.NUMBER,
+          dataType: AttributeDataType.INTEGER,
+          required: true,
+          searchable: true,
+          sortable: true,
+          placeholder: 'Available quantity',
+          displayOrder: 3,
+        },
+        {
+          name: 'Unit',
+          key: 'unit',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['Piece', 'Kilogram', 'Ton', 'Meter', 'Square Meter', 'Liter', 'Other'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of buildingMaterialsAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Building materials attributes created successfully');
+
+  // Create attributes for Agricultural
+  console.log('🌾 Creating agricultural attributes...');
+  const agriculturalSubcategories = [
+    'seeds-plants',
+    'fertilizers',
+    'pesticides',
+    'agricultural-tools',
+    'irrigation-systems',
+    'harvesting-equipment',
+    'agricultural-other',
+  ];
+
+  for (const subcategorySlug of agriculturalSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const agriculturalAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Type',
+          key: 'type',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Product type',
+          displayOrder: 2,
+        },
+        {
+          name: 'Quantity',
+          key: 'quantity',
+          type: AttributeType.NUMBER,
+          dataType: AttributeDataType.INTEGER,
+          required: true,
+          searchable: true,
+          sortable: true,
+          placeholder: 'Available quantity',
+          displayOrder: 3,
+        },
+        {
+          name: 'Unit',
+          key: 'unit',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          options: ['Kilogram', 'Liter', 'Piece', 'Pack', 'Bag', 'Other'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of agriculturalAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Agricultural attributes created successfully');
+
+  // Create attributes for Animals
+  console.log('🐾 Creating animals attributes...');
+  const animalsSubcategories = [
+    'pets',
+    'livestock',
+    'birds',
+    'fish-aquatic',
+    'horses-equines',
+    'wild-animals',
+    'animals-other',
+  ];
+
+  for (const subcategorySlug of animalsSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const animalsAttributes = [
+        {
+          name: 'Species',
+          key: 'species',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Animal species',
+          displayOrder: 1,
+        },
+        {
+          name: 'Age',
+          key: 'age',
+          type: AttributeType.NUMBER,
+          dataType: AttributeDataType.INTEGER,
+          required: false,
+          searchable: true,
+          sortable: true,
+          unit: 'years',
+          placeholder: 'Animal age in years',
+          displayOrder: 2,
+        },
+        {
+          name: 'Gender',
+          key: 'gender',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Male', 'Female', 'Unknown'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Health Status',
+          key: 'health_status',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Healthy', 'Good', 'Fair', 'Needs Care', 'Other'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of animalsAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Animals attributes created successfully');
+
+  // Create attributes for Books and Media
+  console.log('📚 Creating books and media attributes...');
+  const booksMediaSubcategories = [
+    'books',
+    'magazines',
+    'newspapers',
+    'audio-books',
+    'e-books',
+    'movies-dvds',
+    'music-cds',
+  ];
+
+  for (const subcategorySlug of booksMediaSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const booksMediaAttributes = [
+        {
+          name: 'Title',
+          key: 'title',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Book/movie/music title',
+          displayOrder: 1,
+        },
+        {
+          name: 'Author/Artist',
+          key: 'author_artist',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Author or artist name',
+          displayOrder: 2,
+        },
+        {
+          name: 'Language',
+          key: 'language',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Arabic', 'English', 'French', 'German', 'Spanish', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of booksMediaAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Books and media attributes created successfully');
+
+  // Create attributes for Sports and Hobbies
+  console.log('⚽ Creating sports and hobbies attributes...');
+  const sportsHobbiesSubcategories = [
+    'sports-equipment',
+    'fitness-equipment',
+    'outdoor-gear',
+    'musical-instruments',
+    'art-supplies',
+    'collectibles',
+    'hobbies-other',
+  ];
+
+  for (const subcategorySlug of sportsHobbiesSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const sportsHobbiesAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Model',
+          key: 'model',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Model name or number',
+          displayOrder: 2,
+        },
+        {
+          name: 'Type',
+          key: 'type',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Equipment type',
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of sportsHobbiesAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Sports and hobbies attributes created successfully');
+
+  // Create attributes for Health and Beauty
+  console.log('💄 Creating health and beauty attributes...');
+  const healthBeautySubcategories = [
+    'cosmetics',
+    'skincare',
+    'haircare',
+    'fragrances',
+    'health-supplements',
+    'medical-equipment',
+    'health-beauty-other',
+  ];
+
+  for (const subcategorySlug of healthBeautySubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const healthBeautyAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Product Type',
+          key: 'product_type',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Type of product',
+          displayOrder: 2,
+        },
+        {
+          name: 'Skin Type',
+          key: 'skin_type',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['Normal', 'Dry', 'Oily', 'Combination', 'Sensitive', 'Other'],
+          displayOrder: 3,
+        },
+        {
+          name: 'Expiry Date',
+          key: 'expiry_date',
+          type: AttributeType.DATE,
+          dataType: AttributeDataType.DATE,
+          required: false,
+          searchable: true,
+          sortable: true,
+          placeholder: 'Expiry date',
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of healthBeautyAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Health and beauty attributes created successfully');
+
+  // Create attributes for Tools and Equipment
+  console.log('🔧 Creating tools and equipment attributes...');
+  const toolsEquipmentSubcategories = [
+    'hand-tools',
+    'power-tools',
+    'garden-tools',
+    'automotive-tools',
+    'construction-tools',
+    'kitchen-tools',
+    'cleaning-tools',
+    'measuring-tools',
+    'tools-other',
+  ];
+
+  for (const subcategorySlug of toolsEquipmentSubcategories) {
+    const subcategory = await prisma.category.findFirst({
+      where: { slug: subcategorySlug },
+    });
+
+    if (subcategory) {
+      const toolsEquipmentAttributes = [
+        {
+          name: 'Brand',
+          key: 'brand',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Brand name',
+          displayOrder: 1,
+        },
+        {
+          name: 'Model',
+          key: 'model',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Model name or number',
+          displayOrder: 2,
+        },
+        {
+          name: 'Tool Type',
+          key: 'tool_type',
+          type: AttributeType.TEXT,
+          dataType: AttributeDataType.STRING,
+          required: true,
+          searchable: true,
+          sortable: false,
+          placeholder: 'Type of tool',
+          displayOrder: 3,
+        },
+        {
+          name: 'Condition',
+          key: 'condition',
+          type: AttributeType.SELECT,
+          dataType: AttributeDataType.STRING,
+          required: false,
+          searchable: true,
+          sortable: false,
+          options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+          displayOrder: 4,
+        },
+      ];
+
+      for (const attr of toolsEquipmentAttributes) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: subcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            unit: attr.unit,
+            placeholder: attr.placeholder,
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+  console.log('✅ Tools and equipment attributes created successfully');
 
   // Create attributes for Services and Businesses
 }
