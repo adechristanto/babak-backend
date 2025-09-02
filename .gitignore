@@ -3,3 +3,12 @@ node_modules
 .env
 
 /generated/prisma
+
+# Ignore build artifacts
+dist/
+.DS_Store
+node_modules/
+.env
+.env.*
+coverage/
+.prisma/
