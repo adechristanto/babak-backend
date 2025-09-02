@@ -555,6 +555,10 @@ export class ListingsService {
   }
 
   async submitForApproval(id: number, userId: number): Promise<ListingResponseDto> {
+    // Add a small delay to ensure transaction consistency
+    // This helps prevent race conditions when the listing was just created
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     const listing = await this.prisma.listing.findUnique({
       where: { id },
       include: {
@@ -567,6 +571,8 @@ export class ListingsService {
     });
 
     if (!listing) {
+      // Log the error for debugging
+      console.error(`Listing not found: ID ${id}, User ${userId}`);
       throw new NotFoundException('Listing not found');
     }
 
