@@ -2869,6 +2869,75 @@ const productTemplates: Record<
   ],
 };
 
+// Computers & Accessories Attributes
+const computersAccessoriesAttributes = [
+  // Laptops
+  { name: 'Brand', key: 'brand', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Apple', 'Dell', 'HP', 'Lenovo', 'Asus', 'Acer', 'MSI', 'Razer', 'Microsoft', 'Samsung', 'Other'], displayOrder: 1 },
+  { name: 'Model', key: 'model', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, placeholder: 'e.g., MacBook Pro 14-inch', displayOrder: 2 },
+  { name: 'Screen Size', key: 'screen_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: true, searchable: true, sortable: true, unit: 'inches', placeholder: 'e.g., 13.3', displayOrder: 3 },
+  { name: 'Processor (CPU)', key: 'processor', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, placeholder: 'e.g., Intel Core i7, Apple M2', displayOrder: 4 },
+  { name: 'RAM', key: 'ram_gb', type: AttributeType.SELECT, dataType: AttributeDataType.INTEGER, required: true, searchable: true, sortable: true, options: ['4', '8', '16', '32', '64'], unit: 'GB', displayOrder: 5 },
+  { name: 'Storage Type', key: 'storage_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['SSD', 'HDD', 'Hybrid'], displayOrder: 6 },
+  { name: 'Storage Size', key: 'storage_size', type: AttributeType.SELECT, dataType: AttributeDataType.INTEGER, required: true, searchable: true, sortable: true, options: ['128', '256', '512', '1024', '2048'], unit: 'GB', displayOrder: 7 },
+  { name: 'Graphics Card (GPU)', key: 'graphics_card', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, placeholder: 'e.g., NVIDIA RTX 4060, Intel Iris', displayOrder: 8 },
+  { name: 'Screen Resolution', key: 'screen_resolution', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['1366x768', '1920x1080', '2560x1440', '3840x2160', 'Retina'], displayOrder: 9 },
+  { name: 'Operating System', key: 'operating_system', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Windows 11', 'Windows 10', 'macOS', 'Linux', 'Chrome OS'], displayOrder: 10 },
+  { name: 'Condition', key: 'condition', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['New', 'Like New', 'Good', 'Fair', 'Refurbished'], displayOrder: 11 },
+  { name: 'Battery Health', key: 'battery_health', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['Excellent (90-100%)', 'Good (80-89%)', 'Fair (70-79%)', 'Poor (Below 70%)'], displayOrder: 12 },
+  { name: 'Inclusions', key: 'inclusions', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['Original Charger', 'Original Box', 'Manual', 'Carrying Case', 'Mouse'], displayOrder: 13 },
+
+  // Desktop Computers
+  { name: 'Computer Type', key: 'computer_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['All-in-One', 'Tower Only', 'Full Setup', 'Mini PC'], displayOrder: 1 },
+  { name: 'Build Type', key: 'build_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Pre-built', 'Custom Built'], displayOrder: 2 },
+  { name: 'Motherboard', key: 'motherboard', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, placeholder: 'e.g., ASUS ROG Strix B550-F', displayOrder: 14 },
+  { name: 'Power Supply (PSU)', key: 'psu_wattage', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, sortable: true, unit: 'W', placeholder: 'e.g., 650', displayOrder: 15 },
+  { name: 'Desktop Inclusions', key: 'desktop_inclusions', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['Monitor', 'Keyboard', 'Mouse', 'Speakers', 'Webcam'], displayOrder: 16 },
+
+  // Monitors
+  { name: 'Monitor Size', key: 'monitor_size', type: AttributeType.NUMBER, dataType: AttributeDataType.DECIMAL, required: true, searchable: true, sortable: true, unit: 'inches', placeholder: 'e.g., 27', displayOrder: 3 },
+  { name: 'Monitor Resolution', key: 'monitor_resolution', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['1920x1080 (1080p)', '2560x1440 (1440p)', '3840x2160 (4K)', '5120x2880 (5K)'], displayOrder: 4 },
+  { name: 'Refresh Rate', key: 'refresh_rate', type: AttributeType.SELECT, dataType: AttributeDataType.INTEGER, required: true, searchable: true, sortable: true, options: ['60', '75', '120', '144', '165', '240'], unit: 'Hz', displayOrder: 5 },
+  { name: 'Panel Type', key: 'panel_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['IPS', 'VA', 'TN', 'OLED'], displayOrder: 6 },
+  { name: 'Aspect Ratio', key: 'aspect_ratio', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['16:9', '21:9', '32:9', '4:3'], displayOrder: 7 },
+  { name: 'Ports', key: 'monitor_ports', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['HDMI', 'DisplayPort', 'USB-C', 'VGA', 'DVI', 'Thunderbolt'], displayOrder: 8 },
+
+  // Mice
+  { name: 'Mouse Connectivity', key: 'mouse_connectivity', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Wired', 'Wireless', 'Bluetooth'], displayOrder: 1 },
+  { name: 'Mouse Type', key: 'mouse_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Gaming', 'Ergonomic', 'Standard', 'Trackball'], displayOrder: 2 },
+  { name: 'DPI', key: 'mouse_dpi', type: AttributeType.NUMBER, dataType: AttributeDataType.INTEGER, required: false, searchable: true, sortable: true, unit: 'DPI', placeholder: 'e.g., 1600', displayOrder: 3 },
+
+  // Webcams
+  { name: 'Camera Resolution', key: 'camera_resolution', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['720p', '1080p', '1440p', '4K'], displayOrder: 1 },
+  { name: 'Frame Rate', key: 'frame_rate', type: AttributeType.SELECT, dataType: AttributeDataType.INTEGER, required: false, searchable: true, sortable: true, options: ['30', '60', '120'], unit: 'fps', displayOrder: 2 },
+  { name: 'Built-in Microphone', key: 'builtin_microphone', type: AttributeType.BOOLEAN, dataType: AttributeDataType.BOOLEAN, required: false, searchable: true, sortable: false, displayOrder: 3 },
+
+  // Keyboards
+  { name: 'Keyboard Connectivity', key: 'keyboard_connectivity', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Wired', 'Wireless', 'Bluetooth'], displayOrder: 1 },
+  { name: 'Keyboard Type', key: 'keyboard_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Mechanical', 'Membrane', 'Chiclet'], displayOrder: 2 },
+  { name: 'Switch Type', key: 'switch_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['Cherry MX Blue', 'Cherry MX Red', 'Cherry MX Brown', 'Cherry MX Black', 'Gateron', 'Kailh', 'Other'], displayOrder: 3 },
+  { name: 'Keyboard Layout', key: 'keyboard_layout', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['QWERTY US', 'QWERTY UK', 'AZERTY', 'QWERTZ', 'Other'], displayOrder: 4 },
+
+  // Printers & Scanners
+  { name: 'Printer Functionality', key: 'printer_functionality', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Print', 'Scan', 'Copy', 'Fax'], displayOrder: 1 },
+  { name: 'Print Technology', key: 'print_technology', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Inkjet', 'Laser', 'Thermal'], displayOrder: 2 },
+  { name: 'Color Support', key: 'color_support', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Color', 'Monochrome'], displayOrder: 3 },
+  { name: 'Printer Connectivity', key: 'printer_connectivity', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['USB', 'Wi-Fi', 'Ethernet', 'Bluetooth'], displayOrder: 4 },
+
+  // Computer Audio
+  { name: 'Audio Item Type', key: 'audio_item_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Speakers', 'Headset', 'Headphones', 'Microphone', 'Sound Card'], displayOrder: 1 },
+  { name: 'Audio Connectivity', key: 'audio_connectivity', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['USB', '3.5mm Jack', 'Bluetooth', 'Wireless', 'XLR'], displayOrder: 2 },
+
+  // Networking
+  { name: 'Network Item Type', key: 'network_item_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Router', 'Modem', 'Switch', 'Wi-Fi Extender', 'Access Point', 'Network Card'], displayOrder: 1 },
+  { name: 'Wi-Fi Standard', key: 'wifi_standard', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, options: ['Wi-Fi 4 (802.11n)', 'Wi-Fi 5 (802.11ac)', 'Wi-Fi 6 (802.11ax)', 'Wi-Fi 6E'], displayOrder: 2 },
+  { name: 'Max Speed', key: 'max_speed', type: AttributeType.TEXT, dataType: AttributeDataType.STRING, required: false, searchable: true, sortable: false, placeholder: 'e.g., 1 Gbps, 300 Mbps', displayOrder: 3 },
+
+  // Software
+  { name: 'Software Type', key: 'software_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Operating System', 'Productivity', 'Creative', 'Gaming', 'Security', 'Development', 'Other'], displayOrder: 1 },
+  { name: 'License Type', key: 'license_type', type: AttributeType.SELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Perpetual', 'Subscription', 'Free', 'Open Source'], displayOrder: 2 },
+  { name: 'Platform', key: 'software_platform', type: AttributeType.MULTISELECT, dataType: AttributeDataType.STRING, required: true, searchable: true, sortable: false, options: ['Windows', 'macOS', 'Linux', 'iOS', 'Android', 'Web'], displayOrder: 3 },
+];
+
 // Function to add comprehensive attributes to listings based on category
 async function addListingAttributes(listingId: number, subcategorySlug: string, categoryId: number) {
   // Get all attributes for this category
@@ -3037,6 +3106,72 @@ async function addListingAttributes(listingId: number, subcategorySlug: string, 
         numericValue = getRandomNumber(10, 500);
         value = String(numericValue);
         break;
+
+      // Computers & Accessories attributes
+      case 'brand':
+        if (subcategorySlug === 'laptops' || subcategorySlug === 'desktop-computers') {
+          value = getRandomFromArray(['Apple', 'Dell', 'HP', 'Lenovo', 'Asus', 'Acer', 'MSI']);
+        } else if (subcategorySlug === 'monitors') {
+          value = getRandomFromArray(['Samsung', 'LG', 'Dell', 'Asus', 'Acer', 'BenQ']);
+        } else if (subcategorySlug === 'mouses' || subcategorySlug === 'keyboards') {
+          value = getRandomFromArray(['Logitech', 'Razer', 'Corsair', 'SteelSeries', 'Microsoft']);
+        } else if (subcategorySlug === 'printers-scanners') {
+          value = getRandomFromArray(['HP', 'Canon', 'Epson', 'Brother', 'Xerox']);
+        } else {
+          value = getRandomFromArray(['Apple', 'Samsung', 'Sony', 'Microsoft', 'Google']);
+        }
+        break;
+      case 'model':
+        if (subcategorySlug === 'laptops') {
+          value = getRandomFromArray(['MacBook Pro 14"', 'XPS 13', 'ThinkPad X1', 'Pavilion 15', 'ZenBook 14']);
+        } else if (subcategorySlug === 'desktop-computers') {
+          value = getRandomFromArray(['iMac 24"', 'OptiPlex 7090', 'Pavilion Desktop', 'ROG Strix GT15']);
+        } else {
+          value = `Model ${getRandomFromArray(['A', 'B', 'C', 'Pro', 'Elite', 'Gaming'])}`;
+        }
+        break;
+      case 'screen_size':
+        numericValue = getRandomFromArray([13.3, 14, 15.6, 16, 17.3]);
+        value = String(numericValue);
+        break;
+      case 'monitor_size':
+        numericValue = getRandomFromArray([21.5, 24, 27, 32, 34]);
+        value = String(numericValue);
+        break;
+      case 'processor':
+        value = getRandomFromArray(['Intel Core i5-12400', 'Intel Core i7-12700K', 'AMD Ryzen 5 5600X', 'AMD Ryzen 7 5800X', 'Apple M2', 'Apple M2 Pro']);
+        break;
+      case 'ram_gb':
+        numericValue = getRandomFromArray([8, 16, 32, 64]);
+        value = String(numericValue);
+        break;
+      case 'storage_size':
+        numericValue = getRandomFromArray([256, 512, 1024, 2048]);
+        value = String(numericValue);
+        break;
+      case 'graphics_card':
+        value = getRandomFromArray(['NVIDIA RTX 4060', 'NVIDIA RTX 4070', 'AMD RX 6600', 'Intel Iris Xe', 'Integrated']);
+        break;
+      case 'psu_wattage':
+        numericValue = getRandomFromArray([450, 550, 650, 750, 850]);
+        value = String(numericValue);
+        break;
+      case 'refresh_rate':
+        numericValue = getRandomFromArray([60, 75, 120, 144, 165]);
+        value = String(numericValue);
+        break;
+      case 'mouse_dpi':
+        numericValue = getRandomFromArray([800, 1200, 1600, 3200, 6400]);
+        value = String(numericValue);
+        break;
+      case 'frame_rate':
+        numericValue = getRandomFromArray([30, 60, 120]);
+        value = String(numericValue);
+        break;
+      case 'max_speed':
+        value = getRandomFromArray(['100 Mbps', '300 Mbps', '1 Gbps', '2.4 Gbps']);
+        break;
+
       default:
         // Generate generic values based on attribute type
         if (attr.type === AttributeType.SELECT && attr.options) {
@@ -3349,6 +3484,512 @@ async function main() {
       });
     }
     console.log('✅ Car attributes created successfully');
+  }
+
+  // Create attributes for Motorcycles
+  const motorcyclesSubcategory = await prisma.category.findFirst({
+    where: { slug: 'motorcycles' },
+  });
+
+  if (motorcyclesSubcategory) {
+    const motorcycleAttributes = [
+      {
+        name: 'Make',
+        key: 'make',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Motorcycle make (e.g., Honda, Yamaha, Suzuki)',
+        displayOrder: 1,
+      },
+      {
+        name: 'Model',
+        key: 'model',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Motorcycle model (e.g., CG 125, YBR 125)',
+        displayOrder: 2,
+      },
+      {
+        name: 'Year',
+        key: 'year',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'year',
+        placeholder: 'Manufacturing year',
+        displayOrder: 3,
+      },
+      {
+        name: 'Engine Capacity',
+        key: 'engine_capacity',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'cc',
+        placeholder: 'Engine capacity in cc',
+        displayOrder: 4,
+      },
+      {
+        name: 'Fuel Type',
+        key: 'fuel_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        options: ['Bensin', 'Electric', 'Hybrid'],
+        displayOrder: 5,
+      },
+      {
+        name: 'Mileage',
+        key: 'mileage',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'km',
+        placeholder: 'Total kilometers driven',
+        displayOrder: 6,
+      },
+      {
+        name: 'Color',
+        key: 'color',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['Black', 'White', 'Red', 'Blue', 'Silver', 'Green', 'Yellow', 'Other'],
+        displayOrder: 7,
+      },
+      {
+        name: 'Condition',
+        key: 'condition',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+        displayOrder: 8,
+      },
+    ];
+
+    for (const attr of motorcycleAttributes) {
+      await prisma.categoryAttribute.create({
+        data: {
+          categoryId: motorcyclesSubcategory.id,
+          name: attr.name,
+          key: attr.key,
+          type: attr.type,
+          dataType: attr.dataType,
+          required: attr.required,
+          searchable: attr.searchable,
+          sortable: attr.sortable,
+          options: attr.options,
+          ...((attr as any).unit && { unit: (attr as any).unit }),
+          ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+          displayOrder: attr.displayOrder,
+        },
+      });
+    }
+    console.log('✅ Motorcycle attributes created successfully');
+  }
+
+  // Create attributes for Trucks and Commercial Vehicles
+  const trucksSubcategory = await prisma.category.findFirst({
+    where: { slug: 'trucks-commercial' },
+  });
+
+  if (trucksSubcategory) {
+    const truckAttributes = [
+      {
+        name: 'Make',
+        key: 'make',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Vehicle make (e.g., Isuzu, Mitsubishi, Ford)',
+        displayOrder: 1,
+      },
+      {
+        name: 'Model',
+        key: 'model',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Vehicle model (e.g., NPR, Fuso Canter)',
+        displayOrder: 2,
+      },
+      {
+        name: 'Year',
+        key: 'year',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'year',
+        placeholder: 'Manufacturing year',
+        displayOrder: 3,
+      },
+      {
+        name: 'Vehicle Type',
+        key: 'vehicle_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        options: ['Light Truck', 'Medium Truck', 'Heavy Truck', 'Van', 'Bus', 'Other'],
+        displayOrder: 4,
+      },
+      {
+        name: 'Fuel Type',
+        key: 'fuel_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        options: ['Diesel', 'Bensin', 'Electric', 'Hybrid', 'LPG', 'CNG'],
+        displayOrder: 5,
+      },
+      {
+        name: 'Load Capacity',
+        key: 'load_capacity',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'kg',
+        placeholder: 'Maximum load capacity in kg',
+        displayOrder: 6,
+      },
+      {
+        name: 'Mileage',
+        key: 'mileage',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'km',
+        placeholder: 'Total kilometers driven',
+        displayOrder: 7,
+      },
+      {
+        name: 'Transmission',
+        key: 'transmission',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['Manual', 'Automatic', 'Semi-automatic'],
+        displayOrder: 8,
+      },
+      {
+        name: 'Condition',
+        key: 'condition',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+        displayOrder: 9,
+      },
+    ];
+
+    for (const attr of truckAttributes) {
+      await prisma.categoryAttribute.create({
+        data: {
+          categoryId: trucksSubcategory.id,
+          name: attr.name,
+          key: attr.key,
+          type: attr.type,
+          dataType: attr.dataType,
+          required: attr.required,
+          searchable: attr.searchable,
+          sortable: attr.sortable,
+          options: attr.options,
+          ...((attr as any).unit && { unit: (attr as any).unit }),
+          ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+          displayOrder: attr.displayOrder,
+        },
+      });
+    }
+    console.log('✅ Trucks and commercial vehicles attributes created successfully');
+  }
+
+  // Create attributes for Agricultural and Industrial Vehicles
+  const agriculturalSubcategory = await prisma.category.findFirst({
+    where: { slug: 'agricultural-industrial' },
+  });
+
+  if (agriculturalSubcategory) {
+    const agriculturalAttributes = [
+      {
+        name: 'Make',
+        key: 'make',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Vehicle make (e.g., John Deere, Caterpillar, Kubota)',
+        displayOrder: 1,
+      },
+      {
+        name: 'Model',
+        key: 'model',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Vehicle model',
+        displayOrder: 2,
+      },
+      {
+        name: 'Year',
+        key: 'year',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'year',
+        placeholder: 'Manufacturing year',
+        displayOrder: 3,
+      },
+      {
+        name: 'Vehicle Type',
+        key: 'vehicle_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        options: ['Tractor', 'Harvester', 'Forklift', 'Excavator', 'Bulldozer', 'Crane', 'Other'],
+        displayOrder: 4,
+      },
+      {
+        name: 'Engine Power',
+        key: 'engine_power',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'HP',
+        placeholder: 'Engine power in horsepower',
+        displayOrder: 5,
+      },
+      {
+        name: 'Operating Hours',
+        key: 'operating_hours',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'hours',
+        placeholder: 'Total operating hours',
+        displayOrder: 6,
+      },
+      {
+        name: 'Fuel Type',
+        key: 'fuel_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['Diesel', 'Bensin', 'Electric', 'Hybrid'],
+        displayOrder: 7,
+      },
+      {
+        name: 'Condition',
+        key: 'condition',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+        displayOrder: 8,
+      },
+    ];
+
+    for (const attr of agriculturalAttributes) {
+      await prisma.categoryAttribute.create({
+        data: {
+          categoryId: agriculturalSubcategory.id,
+          name: attr.name,
+          key: attr.key,
+          type: attr.type,
+          dataType: attr.dataType,
+          required: attr.required,
+          searchable: attr.searchable,
+          sortable: attr.sortable,
+          options: attr.options,
+          ...((attr as any).unit && { unit: (attr as any).unit }),
+          ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+          displayOrder: attr.displayOrder,
+        },
+      });
+    }
+    console.log('✅ Agricultural and industrial vehicles attributes created successfully');
+  }
+
+  // Create attributes for Marine Vehicles
+  const marineSubcategory = await prisma.category.findFirst({
+    where: { slug: 'marine-vehicles' },
+  });
+
+  if (marineSubcategory) {
+    const marineAttributes = [
+      {
+        name: 'Make',
+        key: 'make',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Boat make (e.g., Yamaha, Honda, Mercury)',
+        displayOrder: 1,
+      },
+      {
+        name: 'Model',
+        key: 'model',
+        type: AttributeType.TEXT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        placeholder: 'Boat model',
+        displayOrder: 2,
+      },
+      {
+        name: 'Year',
+        key: 'year',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: true,
+        searchable: true,
+        sortable: true,
+        unit: 'year',
+        placeholder: 'Manufacturing year',
+        displayOrder: 3,
+      },
+      {
+        name: 'Boat Type',
+        key: 'boat_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: true,
+        searchable: true,
+        sortable: false,
+        options: ['Fishing Boat', 'Yacht', 'Speedboat', 'Sailboat', 'Pontoon', 'Jet Ski', 'Other'],
+        displayOrder: 4,
+      },
+      {
+        name: 'Length',
+        key: 'length',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.DECIMAL,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'm',
+        placeholder: 'Boat length in meters',
+        displayOrder: 5,
+      },
+      {
+        name: 'Engine Power',
+        key: 'engine_power',
+        type: AttributeType.NUMBER,
+        dataType: AttributeDataType.INTEGER,
+        required: false,
+        searchable: true,
+        sortable: true,
+        unit: 'HP',
+        placeholder: 'Engine power in horsepower',
+        displayOrder: 6,
+      },
+      {
+        name: 'Fuel Type',
+        key: 'fuel_type',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['Bensin', 'Diesel', 'Electric', 'Hybrid'],
+        displayOrder: 7,
+      },
+      {
+        name: 'Hull Material',
+        key: 'hull_material',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['Fiberglass', 'Aluminum', 'Wood', 'Steel', 'Inflatable', 'Other'],
+        displayOrder: 8,
+      },
+      {
+        name: 'Condition',
+        key: 'condition',
+        type: AttributeType.SELECT,
+        dataType: AttributeDataType.STRING,
+        required: false,
+        searchable: true,
+        sortable: false,
+        options: ['New', 'Like New', 'Excellent', 'Good', 'Fair', 'Poor'],
+        displayOrder: 9,
+      },
+    ];
+
+    for (const attr of marineAttributes) {
+      await prisma.categoryAttribute.create({
+        data: {
+          categoryId: marineSubcategory.id,
+          name: attr.name,
+          key: attr.key,
+          type: attr.type,
+          dataType: attr.dataType,
+          required: attr.required,
+          searchable: attr.searchable,
+          sortable: attr.sortable,
+          options: attr.options,
+          ...((attr as any).unit && { unit: (attr as any).unit }),
+          ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+          displayOrder: attr.displayOrder,
+        },
+      });
+    }
+    console.log('✅ Marine vehicles attributes created successfully');
   }
 
   // Create attributes for Real Estate
@@ -5642,7 +6283,393 @@ async function main() {
   }
   console.log('✅ Tools and equipment attributes created successfully');
 
-  // Create attributes for Services and Businesses
+  // Create attributes for Computers & Accessories
+  console.log('🔧 Creating computers & accessories attributes...');
+
+  // Laptops
+  const laptopsSubcategory = await prisma.category.findFirst({
+    where: { slug: 'laptops' },
+  });
+
+  if (laptopsSubcategory) {
+    const laptopAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'screen_size', 'processor', 'ram_gb', 'storage_type', 'storage_size',
+       'graphics_card', 'screen_resolution', 'operating_system', 'condition', 'battery_health', 'inclusions'].includes(attr.key)
+    );
+
+    // Check if attributes already exist to avoid duplicates
+    const existingAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: laptopsSubcategory.id },
+      select: { key: true }
+    });
+    const existingKeys = new Set(existingAttributes.map(attr => attr.key));
+
+    for (const attr of laptopAttributes) {
+      if (!existingKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: laptopsSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Desktop Computers
+  const desktopSubcategory = await prisma.category.findFirst({
+    where: { slug: 'desktop-computers' },
+  });
+
+  if (desktopSubcategory) {
+    const desktopAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'computer_type', 'build_type', 'processor', 'ram_gb', 'storage_type', 'storage_size',
+       'graphics_card', 'motherboard', 'psu_wattage', 'operating_system', 'condition', 'desktop_inclusions'].includes(attr.key)
+    );
+
+    const existingDesktopAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: desktopSubcategory.id },
+      select: { key: true }
+    });
+    const existingDesktopKeys = new Set(existingDesktopAttributes.map(attr => attr.key));
+
+    for (const attr of desktopAttributes) {
+      if (!existingDesktopKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: desktopSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Monitors
+  const monitorsSubcategory = await prisma.category.findFirst({
+    where: { slug: 'monitors' },
+  });
+
+  if (monitorsSubcategory) {
+    const monitorAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'monitor_size', 'monitor_resolution', 'refresh_rate', 'panel_type', 'aspect_ratio', 'monitor_ports', 'condition'].includes(attr.key)
+    );
+
+    const existingMonitorAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: monitorsSubcategory.id },
+      select: { key: true }
+    });
+    const existingMonitorKeys = new Set(existingMonitorAttributes.map(attr => attr.key));
+
+    for (const attr of monitorAttributes) {
+      if (!existingMonitorKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: monitorsSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Mice
+  const miceSubcategory = await prisma.category.findFirst({
+    where: { slug: 'mouses' },
+  });
+
+  if (miceSubcategory) {
+    const mouseAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'mouse_connectivity', 'mouse_type', 'mouse_dpi', 'condition'].includes(attr.key)
+    );
+
+    const existingMouseAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: miceSubcategory.id },
+      select: { key: true }
+    });
+    const existingMouseKeys = new Set(existingMouseAttributes.map(attr => attr.key));
+
+    for (const attr of mouseAttributes) {
+      if (!existingMouseKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: miceSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Webcams
+  const webcamsSubcategory = await prisma.category.findFirst({
+    where: { slug: 'computer-cameras' },
+  });
+
+  if (webcamsSubcategory) {
+    const webcamAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'camera_resolution', 'frame_rate', 'builtin_microphone', 'condition'].includes(attr.key)
+    );
+
+    const existingWebcamAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: webcamsSubcategory.id },
+      select: { key: true }
+    });
+    const existingWebcamKeys = new Set(existingWebcamAttributes.map(attr => attr.key));
+
+    for (const attr of webcamAttributes) {
+      if (!existingWebcamKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: webcamsSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Keyboards
+  const keyboardsSubcategory = await prisma.category.findFirst({
+    where: { slug: 'keyboards' },
+  });
+
+  if (keyboardsSubcategory) {
+    const keyboardAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'keyboard_connectivity', 'keyboard_type', 'switch_type', 'keyboard_layout', 'condition'].includes(attr.key)
+    );
+
+    const existingKeyboardAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: keyboardsSubcategory.id },
+      select: { key: true }
+    });
+    const existingKeyboardKeys = new Set(existingKeyboardAttributes.map(attr => attr.key));
+
+    for (const attr of keyboardAttributes) {
+      if (!existingKeyboardKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: keyboardsSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Printers & Scanners
+  const printersSubcategory = await prisma.category.findFirst({
+    where: { slug: 'printers-scanners' },
+  });
+
+  if (printersSubcategory) {
+    const printerAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'printer_functionality', 'print_technology', 'color_support', 'printer_connectivity', 'condition'].includes(attr.key)
+    );
+
+    const existingPrinterAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: printersSubcategory.id },
+      select: { key: true }
+    });
+    const existingPrinterKeys = new Set(existingPrinterAttributes.map(attr => attr.key));
+
+    for (const attr of printerAttributes) {
+      if (!existingPrinterKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: printersSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Computer Audio
+  const computerAudioSubcategory = await prisma.category.findFirst({
+    where: { slug: 'computer-audio' },
+  });
+
+  if (computerAudioSubcategory) {
+    const audioAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'audio_item_type', 'audio_connectivity', 'condition'].includes(attr.key)
+    );
+
+    const existingAudioAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: computerAudioSubcategory.id },
+      select: { key: true }
+    });
+    const existingAudioKeys = new Set(existingAudioAttributes.map(attr => attr.key));
+
+    for (const attr of audioAttributes) {
+      if (!existingAudioKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: computerAudioSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Networking
+  const networkingSubcategory = await prisma.category.findFirst({
+    where: { slug: 'networks-communications' },
+  });
+
+  if (networkingSubcategory) {
+    const networkAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'network_item_type', 'wifi_standard', 'max_speed', 'condition'].includes(attr.key)
+    );
+
+    const existingNetworkAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: networkingSubcategory.id },
+      select: { key: true }
+    });
+    const existingNetworkKeys = new Set(existingNetworkAttributes.map(attr => attr.key));
+
+    for (const attr of networkAttributes) {
+      if (!existingNetworkKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: networkingSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  // Software
+  const softwareSubcategory = await prisma.category.findFirst({
+    where: { slug: 'software' },
+  });
+
+  if (softwareSubcategory) {
+    const softwareAttributes = computersAccessoriesAttributes.filter(attr =>
+      ['brand', 'model', 'software_type', 'license_type', 'software_platform', 'condition'].includes(attr.key)
+    );
+
+    const existingSoftwareAttributes = await prisma.categoryAttribute.findMany({
+      where: { categoryId: softwareSubcategory.id },
+      select: { key: true }
+    });
+    const existingSoftwareKeys = new Set(existingSoftwareAttributes.map(attr => attr.key));
+
+    for (const attr of softwareAttributes) {
+      if (!existingSoftwareKeys.has(attr.key)) {
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId: softwareSubcategory.id,
+            name: attr.name,
+            key: attr.key,
+            type: attr.type,
+            dataType: attr.dataType,
+            required: attr.required,
+            searchable: attr.searchable,
+            sortable: attr.sortable,
+            options: attr.options,
+            ...((attr as any).unit && { unit: (attr as any).unit }),
+            ...((attr as any).placeholder && { placeholder: (attr as any).placeholder }),
+            displayOrder: attr.displayOrder,
+          },
+        });
+      }
+    }
+  }
+
+  console.log('✅ Computers & accessories attributes created successfully');
 }
 
 // Execute main function
