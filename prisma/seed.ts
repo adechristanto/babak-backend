@@ -7,7 +7,7 @@ import {
   AttributeType,
   AttributeDataType,
 } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
 
@@ -3223,13 +3223,13 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Create test users
-  const passwordHash = await bcrypt.hash('Superuser123', 10);
-  const adminPasswordHash = await bcrypt.hash('Adminuser123', 10);
-  const userPasswordHash = await bcrypt.hash('Testuser123', 10);
+  const passwordHash = await argon2.hash('Superuser.123');
+  const adminPasswordHash = await argon2.hash('Adminuser.123');
+  const userPasswordHash = await argon2.hash('Testuser.123');
 
   const superUser = await prisma.user.create({
     data: {
-      email: 'pratomoadhe+20@gmail.com',
+      email: 'superuser@christanto.qzz.io',
       passwordHash,
       name: 'Super User',
       role: UserRole.SUPERUSER,
@@ -3242,7 +3242,7 @@ async function main() {
 
   const adminUser = await prisma.user.create({
     data: {
-      email: 'pratomoadhe+21@gmail.com',
+      email: 'admin@christanto.qzz.io',
       passwordHash: adminPasswordHash,
       name: 'Admin User',
       role: UserRole.ADMIN,
@@ -3255,7 +3255,7 @@ async function main() {
 
   const user1 = await prisma.user.create({
     data: {
-      email: 'pratomoadhe+22@gmail.com',
+      email: 'user1@christanto.qzz.io',
       passwordHash: userPasswordHash,
       name: 'Test User 1',
       role: UserRole.USER,
@@ -3268,7 +3268,7 @@ async function main() {
 
   const user2 = await prisma.user.create({
     data: {
-      email: 'pratomoadhe+23@gmail.com',
+      email: 'user2@christanto.qzz.io',
       passwordHash: userPasswordHash,
       name: 'Test User 2',
       role: UserRole.USER,
@@ -4545,10 +4545,10 @@ async function main() {
   console.log(`📦 Total products created: ${productCount}`);
 
   console.log('🌱 Database seeding completed!');
-  console.log('👤 Super User:', superUser.email, '/ Superuser123');
-  console.log('👤 Admin User:', adminUser.email, '/ Adminuser123');
-  console.log('👤 User 1:', user1.email, '/ Testuser123');
-  console.log('👤 User 2:', user2.email, '/ Testuser123');
+  console.log('👤 Super User:', superUser.email, '/ Superuser.123');
+  console.log('👤 Admin User:', adminUser.email, '/ Adminuser.123');
+  console.log('👤 User 1:', user1.email, '/ Testuser.123');
+  console.log('👤 User 2:', user2.email, '/ Testuser.123');
   console.log(`📦 Total products created: ${productCount}`);
   console.log(
     `📁 Categories created: ${categoriesData.length} main categories with subcategories`,
